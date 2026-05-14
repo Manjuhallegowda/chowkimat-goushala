@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useLocation } from "wouter";
-import { Pencil, Trash2, Shield, Image as ImageIcon, CreditCard, Settings, Plus, Save, X, Key } from "lucide-react";
+import { Pencil, Trash2, Shield, Image as ImageIcon, CreditCard, Settings, Plus, Save, X, Key, Layout, LogOut, Menu, UserCircle } from "lucide-react";
 
 // ── Types ───────────────────────────────────────────────────────────
 
@@ -36,7 +36,8 @@ type Tab = "gallery" | "hero" | "settings" | "financial" | "admins";
 export default function AdminDashboard() {
   const [, setLocation] = useLocation();
   const perms = getPerms();
-  const [tab, setTab] = useState<Tab>("gallery");
+  const [tab, setTab] = useState<Tab>("hero");
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   useEffect(() => {
     if (!getToken()) setLocation("/admin");
@@ -49,52 +50,111 @@ export default function AdminDashboard() {
   }
 
   const tabs: { key: Tab; label: string; icon: any; show: boolean }[] = [
+    { key: "hero", label: "Hero", icon: Layout, show: perms.canEditSiteSettings },
     { key: "gallery", label: "Gallery", icon: ImageIcon, show: perms.canEditGallery },
-    { key: "hero", label: "Hero Slider", icon: ImageIcon, show: perms.canEditSiteSettings },
-    { key: "settings", label: "Site Settings", icon: Settings, show: perms.canEditSiteSettings },
-    { key: "financial", label: "Bank & QR", icon: CreditCard, show: perms.canEditFinancials },
-    { key: "admins", label: "Manage Admins", icon: Shield, show: perms.canManageAdmins },
+    { key: "settings", label: "Settings", icon: Settings, show: perms.canEditSiteSettings },
+    { key: "financial", label: "Financial", icon: CreditCard, show: perms.canEditFinancials },
+    { key: "admins", label: "Admins", icon: Shield, show: perms.canManageAdmins },
   ];
 
-  return (
-    <div className="min-h-screen pt-24 pb-16 px-4 bg-background">
-      <div className="container mx-auto max-w-6xl">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-8 border-b border-border pb-6">
-          <div>
-            <h1 className="font-serif text-4xl text-primary font-bold">Admin Dashboard</h1>
-            <p className="text-foreground/60 mt-1">Full control over temple assets and configurations</p>
-          </div>
-          <button onClick={handleLogout}
-            className="border border-destructive/30 text-destructive px-6 py-2.5 text-sm tracking-widest uppercase font-medium hover:bg-destructive hover:text-destructive-foreground transition-all duration-300">
-            Logout
-          </button>
-        </div>
+  const activeTab = tabs.find(t => t.key === tab);
 
-        {/* Tab Navigation */}
-        <div className="flex gap-2 mb-10 overflow-x-auto pb-2">
-          {tabs.filter((t) => t.show).map((t) => (
-            <button key={t.key} onClick={() => setTab(t.key)}
-              className={`flex items-center gap-2 px-6 py-3 text-sm tracking-widest uppercase transition-all duration-300 whitespace-nowrap border-b-2 ${
+  return (
+    <div className="min-h-screen bg-[#FDFCFB] flex flex-col lg:flex-row">
+      {/* Mobile Header */}
+      <div className="lg:hidden fixed top-0 left-0 right-0 h-16 bg-white border-b border-border z-50 px-4 flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <div className="w-8 h-8 bg-primary rounded flex items-center justify-center text-white font-serif font-bold text-sm">KC</div>
+          <span className="font-serif font-bold text-primary">Admin</span>
+        </div>
+        <button onClick={handleLogout} className="p-2 text-destructive hover:bg-destructive/10 rounded-full transition-colors">
+          <LogOut size={20} />
+        </button>
+      </div>
+
+      {/* Desktop Sidebar */}
+      <aside className="hidden lg:flex w-64 bg-white border-r border-border flex-col sticky top-0 h-screen z-40">
+        <div className="p-6 border-b border-border">
+          <h1 className="font-serif text-2xl text-primary font-bold tracking-tight">Chowkimat</h1>
+          <p className="text-[10px] uppercase tracking-widest text-foreground/40 font-bold mt-1">Admin Dashboard</p>
+        </div>
+        
+        <nav className="flex-grow p-4 space-y-1 overflow-y-auto">
+          {tabs.filter(t => t.show).map((t) => (
+            <button
+              key={t.key}
+              onClick={() => setTab(t.key)}
+              className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-all duration-200 ${
                 tab === t.key
-                  ? "border-primary text-primary bg-primary/5 font-bold"
-                  : "border-transparent text-foreground/50 hover:text-foreground/80 hover:bg-card"
-              }`}>
+                  ? "bg-primary text-white shadow-md shadow-primary/20"
+                  : "text-foreground/60 hover:bg-primary/5 hover:text-primary"
+              }`}
+            >
               <t.icon size={18} />
               {t.label}
             </button>
           ))}
+        </nav>
+
+        <div className="p-4 border-t border-border">
+          <button onClick={handleLogout} className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-destructive hover:bg-destructive/5 transition-all">
+            <LogOut size={18} />
+            Logout
+          </button>
+        </div>
+      </aside>
+
+      {/* Mobile Bottom Navigation */}
+      <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-border z-50 flex items-center justify-around h-16 px-2 safe-area-pb">
+        {tabs.filter(t => t.show).map((t) => (
+          <button
+            key={t.key}
+            onClick={() => setTab(t.key)}
+            className={`flex flex-col items-center justify-center flex-1 gap-1 h-full transition-all duration-200 ${
+              tab === t.key ? "text-primary" : "text-foreground/40"
+            }`}
+          >
+            <t.icon size={20} className={tab === t.key ? "scale-110" : ""} />
+            <span className="text-[10px] font-bold uppercase tracking-tighter">{t.label}</span>
+            {tab === t.key && <div className="absolute bottom-0 w-12 h-1 bg-primary rounded-t-full" />}
+          </button>
+        ))}
+      </nav>
+
+      {/* Main Content Area */}
+      <main className="flex-grow pt-20 pb-20 lg:pt-0 lg:pb-0 min-h-screen">
+        <header className="hidden lg:flex items-center justify-between p-8 bg-white/50 backdrop-blur-sm border-b border-border sticky top-0 z-30">
+          <div>
+            <h2 className="font-serif text-3xl text-foreground font-bold">{activeTab?.label}</h2>
+            <p className="text-sm text-foreground/50 mt-1">Manage your temple's {activeTab?.label.toLowerCase()} efficiently</p>
+          </div>
+          <div className="flex items-center gap-4">
+             <div className="text-right hidden sm:block">
+               <p className="text-xs font-bold text-foreground">Logged in as</p>
+               <p className="text-[10px] text-primary uppercase tracking-widest font-black">Administrator</p>
+             </div>
+             <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary border border-primary/20">
+               <UserCircle size={24} />
+             </div>
+          </div>
+        </header>
+
+        {/* Page Header for Mobile */}
+        <div className="lg:hidden px-4 pt-4 mb-4">
+          <h2 className="font-serif text-2xl text-foreground font-bold">{activeTab?.label}</h2>
+          <div className="h-1 w-12 bg-primary rounded-full mt-2" />
         </div>
 
-        {/* Tab Content */}
-        <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-          {tab === "gallery" && perms.canEditGallery && <GalleryManager />}
-          {tab === "hero" && perms.canEditSiteSettings && <HeroManager />}
-          {tab === "settings" && perms.canEditSiteSettings && <SiteSettingsManager />}
-          {tab === "financial" && perms.canEditFinancials && <FinancialSettingsManager />}
-          {tab === "admins" && perms.canManageAdmins && <AdminManager />}
+        <div className="p-4 lg:p-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+          <div className="max-w-6xl mx-auto">
+            {tab === "gallery" && perms.canEditGallery && <GalleryManager />}
+            {tab === "hero" && perms.canEditSiteSettings && <HeroManager />}
+            {tab === "settings" && perms.canEditSiteSettings && <SiteSettingsManager />}
+            {tab === "financial" && perms.canEditFinancials && <FinancialSettingsManager />}
+            {tab === "admins" && perms.canManageAdmins && <AdminManager />}
+          </div>
         </div>
-      </div>
+      </main>
     </div>
   );
 }
@@ -186,31 +246,34 @@ function GalleryManager() {
   }
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
+    <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
       <div className="lg:col-span-4">
-        <div className="bg-card border border-border p-8 rounded-xl shadow-sm sticky top-28">
+        <div className="bg-white border border-border p-6 lg:p-8 rounded-2xl shadow-sm lg:sticky lg:top-32">
           <h2 className="font-serif text-2xl text-foreground mb-6 flex items-center gap-2">
             {editingImage ? <Pencil size={20} className="text-primary" /> : <Plus size={20} className="text-primary" />}
-            {editingImage ? "Edit Metadata" : "Upload New Image"}
+            {editingImage ? "Edit Details" : "New Image"}
           </h2>
           {message && <StatusMessage message={message} />}
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-5">
             {!editingImage && (
               <div>
-                <label htmlFor="gallery-file" className="block text-sm font-semibold text-foreground mb-2">Image File</label>
-                <input id="gallery-file" type="file" accept="image/*" onChange={(e) => setFile(e.target.files?.[0] || null)} required className="w-full text-sm text-foreground/70 file:mr-4 file:py-2.5 file:px-6 file:border file:border-border file:text-sm file:font-bold file:bg-background file:text-foreground hover:file:bg-primary/10 file:transition-colors file:cursor-pointer rounded border border-border p-1" />
+                <label htmlFor="gallery-file" className="block text-xs font-bold text-foreground/40 uppercase tracking-widest mb-2">Image File</label>
+                <div className="relative">
+                  <input id="gallery-file" type="file" accept="image/*" onChange={(e) => setFile(e.target.files?.[0] || null)} required className="w-full text-xs text-foreground/70 file:mr-4 file:py-2 file:px-4 file:border-0 file:text-xs file:font-bold file:bg-primary/10 file:text-primary hover:file:bg-primary/20 file:transition-colors file:cursor-pointer rounded-xl border border-border p-2 bg-background/50" />
+                </div>
               </div>
             )}
             {editingImage && (
-              <div className="aspect-video relative rounded-lg overflow-hidden border border-border mb-4">
+              <div className="aspect-video relative rounded-xl overflow-hidden border border-border mb-4 shadow-inner bg-muted">
                 <img src={editingImage.url} alt={editingImage.alt} className="w-full h-full object-cover" />
-                <div className="absolute top-2 right-2 bg-primary text-white text-[10px] px-2 py-1 rounded uppercase font-bold">Preview</div>
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+                <div className="absolute bottom-2 left-2 text-white text-[9px] px-2 py-1 bg-primary rounded uppercase font-black tracking-widest">Active Image</div>
               </div>
             )}
-            <InputField id="gallery-alt" label="Alt Text (Description)" value={alt} onChange={setAlt} placeholder="Describe the image for SEO" />
+            <InputField id="gallery-alt" label="Alt Text (SEO)" value={alt} onChange={setAlt} placeholder="Describe this photo..." />
             <div>
-              <label htmlFor="gallery-aspect" className="block text-sm font-semibold text-foreground mb-2">Display Aspect Ratio</label>
-              <select id="gallery-aspect" value={aspect} onChange={(e) => setAspect(e.target.value)} className="w-full px-4 py-3 border border-border bg-background text-foreground rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all">
+              <label htmlFor="gallery-aspect" className="block text-xs font-bold text-foreground/40 uppercase tracking-widest mb-2">Aspect Ratio</label>
+              <select id="gallery-aspect" value={aspect} onChange={(e) => setAspect(e.target.value)} className="w-full px-4 py-3 border border-border bg-background/50 text-foreground rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm font-medium">
                 <option value="aspect-square">Square (1:1)</option>
                 <option value="aspect-video">Video (16:9)</option>
                 <option value="aspect-[3/4]">Portrait (3:4)</option>
@@ -219,12 +282,12 @@ function GalleryManager() {
             </div>
             <InputField id="gallery-sort" label="Display Order" type="number" value={String(sortOrder)} onChange={(v) => setSortOrder(parseInt(v, 10) || 0)} />
             
-            <div className="flex gap-3 pt-2">
+            <div className="flex gap-3 pt-4">
               <SubmitButton disabled={uploading || (!editingImage && !file)}>
                 {uploading ? "Processing..." : editingImage ? "Save Changes" : "Upload Image"}
               </SubmitButton>
               {editingImage && (
-                <button type="button" onClick={handleCancel} className="flex-1 border border-border text-foreground py-3 font-bold uppercase text-xs hover:bg-card transition-colors rounded-lg">
+                <button type="button" onClick={handleCancel} className="flex-1 border border-border text-foreground py-3 font-bold uppercase text-[10px] tracking-widest hover:bg-background transition-all rounded-xl active:scale-95">
                   Cancel
                 </button>
               )}
@@ -233,31 +296,46 @@ function GalleryManager() {
         </div>
       </div>
       <div className="lg:col-span-8">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="font-serif text-2xl text-foreground">Current Gallery ({images.length})</h2>
+        <div className="flex items-center justify-between mb-8">
+          <div>
+            <h2 className="font-serif text-2xl lg:text-3xl text-foreground font-bold">Current Gallery</h2>
+            <p className="text-xs text-foreground/40 mt-1 uppercase tracking-widest font-bold">{images.length} assets deployed</p>
+          </div>
         </div>
-        {loading ? <p className="text-center py-20 text-foreground/40 italic">Loading gallery...</p>
-          : images.length === 0 ? <p className="text-center py-20 bg-card border border-border rounded-xl text-foreground/40 italic">The gallery is currently empty</p>
-          : (
+        
+        {loading ? (
+          <div className="flex flex-col items-center justify-center py-32 text-foreground/20 italic">
+            <div className="w-10 h-10 border-4 border-primary/20 border-t-primary rounded-full animate-spin mb-4" />
+            <p className="text-sm font-bold uppercase tracking-widest">Loading assets...</p>
+          </div>
+        ) : images.length === 0 ? (
+          <div className="text-center py-24 bg-white border-2 border-dashed border-border rounded-3xl">
+            <ImageIcon size={48} className="mx-auto text-foreground/10 mb-4" />
+            <p className="text-foreground/40 italic font-medium">The gallery is currently empty</p>
+          </div>
+        ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
             {images.map((img) => (
-              <div key={img.id} className="bg-card border border-border rounded-xl overflow-hidden group hover:shadow-md transition-all duration-300">
+              <div key={img.id} className="bg-white border border-border rounded-2xl overflow-hidden group hover:shadow-xl hover:border-primary/20 transition-all duration-500">
                 <div className="relative aspect-[4/3] overflow-hidden bg-muted">
-                  <img src={img.url} alt={img.alt} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" />
-                  <div className="absolute inset-0 bg-primary/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3">
-                    <button onClick={() => handleEdit(img)} className="bg-background/90 text-foreground p-3 rounded-full hover:bg-primary hover:text-white transition-all transform translate-y-4 group-hover:translate-y-0 duration-300 shadow-lg">
+                  <img src={img.url} alt={img.alt} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" loading="lazy" />
+                  <div className="absolute inset-0 bg-primary/40 opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-center justify-center gap-4 backdrop-blur-[2px]">
+                    <button onClick={() => handleEdit(img)} className="bg-white text-primary p-4 rounded-2xl hover:bg-primary hover:text-white transition-all transform translate-y-8 group-hover:translate-y-0 duration-500 shadow-xl active:scale-90">
                       <Pencil size={20} />
                     </button>
-                    <button onClick={() => handleDelete(img.id)} className="bg-destructive/90 text-white p-3 rounded-full hover:bg-destructive transition-all transform translate-y-4 group-hover:translate-y-0 duration-300 shadow-lg">
+                    <button onClick={() => handleDelete(img.id)} className="bg-white text-destructive p-4 rounded-2xl hover:bg-destructive hover:text-white transition-all transform translate-y-8 group-hover:translate-y-0 duration-500 shadow-xl active:scale-90 delay-75">
                       <Trash2 size={20} />
                     </button>
                   </div>
+                  <div className="absolute top-3 left-3 px-3 py-1 bg-black/50 backdrop-blur-md text-white text-[9px] font-black uppercase tracking-widest rounded-full border border-white/20">
+                    Order {img.sortOrder}
+                  </div>
                 </div>
-                <div className="p-4 bg-background border-t border-border/30">
-                  <p className="text-sm font-medium text-foreground truncate mb-1">{img.alt || "No description"}</p>
+                <div className="p-5 bg-white border-t border-border/50">
+                  <p className="text-sm font-bold text-foreground truncate mb-2">{img.alt || "No description"}</p>
                   <div className="flex justify-between items-center">
-                    <span className="text-[10px] text-foreground/40 uppercase tracking-widest">Order: {img.sortOrder}</span>
-                    <span className="text-[10px] px-2 py-0.5 bg-secondary/50 text-foreground/60 rounded-full">{img.aspect.replace("aspect-", "")}</span>
+                    <span className="text-[10px] px-3 py-1 bg-primary/5 text-primary font-black uppercase tracking-widest rounded-full">{img.aspect.replace("aspect-", "").replace("[", "").replace("]", "")}</span>
+                    <span className="text-[10px] text-foreground/30 font-bold uppercase tracking-tighter">ID: #{img.id}</span>
                   </div>
                 </div>
               </div>
@@ -332,25 +410,29 @@ function SiteSettingsManager() {
   ];
 
   return (
-    <div className="max-w-3xl">
-      <h2 className="font-serif text-2xl text-foreground mb-4">Temple Site Settings</h2>
-      <p className="text-sm text-foreground/60 mb-8 italic">Update the physical address and contact information displayed on the website.</p>
+    <div className="max-w-4xl">
+      <div className="mb-8 lg:mb-12">
+        <h2 className="font-serif text-2xl lg:text-3xl text-foreground font-bold">Temple Settings</h2>
+        <p className="text-xs text-foreground/40 mt-1 uppercase tracking-widest font-black italic">Public Identity & Contact Information</p>
+      </div>
+      
       {message && <StatusMessage message={message} />}
-      <form onSubmit={handleSave} className="space-y-8">
+      
+      <form onSubmit={handleSave} className="space-y-8 lg:space-y-12">
         {groups.map((group) => (
-          <div key={group.label} className="bg-card border border-border p-8 rounded-xl shadow-sm">
-            <h3 className="text-lg font-bold text-primary mb-6 border-b border-border pb-2 uppercase tracking-widest">{group.label}</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div key={group.label} className="bg-white border border-border p-6 lg:p-10 rounded-3xl shadow-sm">
+            <h3 className="text-xs font-black text-primary mb-8 uppercase tracking-[0.3em] border-b border-primary/10 pb-4">{group.label}</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-8">
               {group.fields.map((f) => (
                 <div key={f.key} className={f.key === "map_embed_url" ? "md:col-span-2" : ""}>
-                  <InputField id={`setting-${f.key}`} label={f.label} value={settings[f.key] || ""} onChange={(v) => update(f.key, v)} />
+                  <InputField id={`setting-${f.key}`} label={f.label} value={settings[f.key] || ""} onChange={(v) => update(f.key, v)} placeholder={`Enter ${f.label.toLowerCase()}...`} />
                 </div>
               ))}
             </div>
           </div>
         ))}
         <div className="max-w-xs ml-auto">
-          <SubmitButton disabled={saving} icon={Save}>{saving ? "Saving..." : "Update All Settings"}</SubmitButton>
+          <SubmitButton disabled={saving} icon={Save}>{saving ? "Synchronizing..." : "Update All Settings"}</SubmitButton>
         </div>
       </form>
     </div>
@@ -416,74 +498,81 @@ function FinancialSettingsManager() {
     } catch (err: any) { setMessage(err.message); } finally { setQrUploading(false); }
   }
 
-  if (loading) return <p className="text-center py-20 italic text-foreground/40">Loading financial data...</p>;
-
   return (
-    <div className="max-w-3xl space-y-10">
-      <div className="bg-destructive/10 border border-destructive/30 p-6 rounded-xl flex items-start gap-4">
-        <Shield className="text-destructive shrink-0 mt-1" size={24} />
+    <div className="max-w-4xl space-y-12">
+      <div className="bg-destructive/5 border border-destructive/20 p-6 lg:p-8 rounded-3xl flex items-start gap-5 relative overflow-hidden group">
+        <div className="absolute top-0 right-0 w-32 h-32 bg-destructive/5 rounded-full -mr-16 -mt-16 transition-transform group-hover:scale-110" />
+        <div className="w-12 h-12 rounded-2xl bg-destructive/10 flex items-center justify-center text-destructive shrink-0 shadow-sm border border-destructive/10">
+          <Shield size={24} />
+        </div>
         <div>
-          <p className="text-destructive font-bold uppercase tracking-widest text-sm">Highly Protected Area</p>
-          <p className="text-sm text-foreground/70 mt-1 leading-relaxed">
-            Modification of bank details and QR codes requires the **Financial Authorization Secret**. 
-            This layer prevents unauthorized changes to donation routing even if an admin account is compromised.
+          <p className="text-xs font-black uppercase tracking-[0.2em] text-destructive mb-1">High Security Vault</p>
+          <p className="text-sm text-foreground/70 leading-relaxed font-medium">
+            Sensitive financial data is protected by a secondary authorization layer. Changes to bank accounts or QR codes require the master secret code to prevent unauthorized redirection of donations.
           </p>
         </div>
       </div>
 
       {message && <StatusMessage message={message} />}
 
-      <div className="bg-card border border-border p-8 rounded-xl shadow-md border-l-4 border-l-primary">
-        <label htmlFor="secret-code" className="block text-sm font-bold text-foreground mb-3 flex items-center gap-2">
-          <Key size={16} className="text-primary" />
-          Enter Secret Authorization Code
+      <div className="bg-white border border-border p-6 lg:p-10 rounded-3xl shadow-md border-t-4 border-t-primary relative">
+        <label htmlFor="secret-code" className="block text-[10px] font-black text-foreground/40 mb-4 flex items-center gap-2 uppercase tracking-[0.2em]">
+          <Key size={14} className="text-primary" />
+          Master Authorization Secret
         </label>
         <input id="secret-code" type="password" value={secretCode} onChange={(e) => setSecretCode(e.target.value)}
           placeholder="••••••••••••"
-          className="w-full px-5 py-4 border border-border bg-background text-foreground rounded-lg focus:outline-none focus:ring-4 focus:ring-primary/20 focus:border-primary transition-all text-xl tracking-widest" />
+          className="w-full px-6 py-5 border border-border bg-background/50 text-foreground rounded-2xl focus:outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all text-2xl tracking-[0.5em] font-black placeholder:tracking-normal placeholder:text-foreground/10" />
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-        <form onSubmit={handleSave} className="bg-card border border-border p-8 rounded-xl shadow-sm space-y-6">
-          <h2 className="font-serif text-xl text-foreground flex items-center gap-2 border-b border-border pb-3">
-            <CreditCard size={20} className="text-primary" />
-            Bank Details
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
+        <form onSubmit={handleSave} className="bg-white border border-border p-6 lg:p-10 rounded-3xl shadow-sm space-y-8">
+          <h2 className="font-serif text-xl lg:text-2xl text-foreground font-bold flex items-center gap-3 border-b border-border/50 pb-5">
+            <CreditCard size={24} className="text-primary" />
+            Bank Assets
           </h2>
-          {[
-            { key: "bank_name", label: "Bank Name" },
-            { key: "bank_account_name", label: "Account Holder" },
-            { key: "bank_account_number", label: "Account Number" },
-            { key: "bank_ifsc", label: "IFSC Code" },
-            { key: "bank_branch", label: "Branch Name" },
-            { key: "upi_id", label: "UPI ID / VPA" },
-          ].map((f) => (
-            <InputField key={f.key} id={`fin-${f.key}`} label={f.label} value={settings[f.key] || ""} onChange={(v) => update(f.key, v)} />
-          ))}
-          <SubmitButton disabled={saving || !secretCode}>{saving ? "Updating..." : "Update Bank Details"}</SubmitButton>
+          <div className="space-y-6">
+            {[
+              { key: "bank_name", label: "Bank Name" },
+              { key: "bank_account_name", label: "Legal Holder" },
+              { key: "bank_account_number", label: "Account No." },
+              { key: "bank_ifsc", label: "IFSC Code" },
+              { key: "bank_branch", label: "Branch Name" },
+              { key: "upi_id", label: "UPI VPA" },
+            ].map((f) => (
+              <InputField key={f.key} id={`fin-${f.key}`} label={f.label} value={settings[f.key] || ""} onChange={(v) => update(f.key, v)} placeholder={`Enter ${f.label.toLowerCase()}...`} />
+            ))}
+          </div>
+          <SubmitButton disabled={saving || !secretCode} icon={Save}>{saving ? "Updating..." : "Authorize & Save"}</SubmitButton>
         </form>
 
-        <form onSubmit={handleQrUpload} className="bg-card border border-border p-8 rounded-xl shadow-sm space-y-6">
-          <h2 className="font-serif text-xl text-foreground flex items-center gap-2 border-b border-border pb-3">
-            <ImageIcon size={20} className="text-primary" />
-            Donation QR Code
+        <form onSubmit={handleQrUpload} className="bg-white border border-border p-6 lg:p-10 rounded-3xl shadow-sm space-y-8 flex flex-col">
+          <h2 className="font-serif text-xl lg:text-2xl text-foreground font-bold flex items-center gap-3 border-b border-border/50 pb-5">
+            <ImageIcon size={24} className="text-primary" />
+            Donation QR
           </h2>
-          {settings.qr_code_url ? (
-            <div className="text-center bg-white p-6 rounded-lg border border-border shadow-inner">
-              <p className="text-[10px] uppercase tracking-widest text-foreground/40 mb-3">Live QR Code</p>
-              <img src={settings.qr_code_url} alt="QR Code" className="mx-auto w-48 h-48 object-contain" />
-            </div>
-          ) : (
-            <div className="aspect-square bg-muted rounded-lg flex flex-col items-center justify-center text-foreground/30 p-8 text-center">
-              <ImageIcon size={48} className="mb-4 opacity-20" />
-              <p className="text-sm font-medium">No QR Code Deployed</p>
-            </div>
-          )}
-          <div>
-            <label htmlFor="qr-file" className="block text-sm font-bold text-foreground mb-3 uppercase tracking-tighter">Upload Replacement</label>
-            <input id="qr-file" type="file" accept="image/*" onChange={(e) => setQrFile(e.target.files?.[0] || null)}
-              className="w-full text-sm text-foreground/70 file:mr-4 file:py-2 file:px-4 file:border file:border-border file:text-sm file:font-bold file:bg-background file:text-foreground hover:file:bg-card file:cursor-pointer border border-border p-1 rounded" />
+          <div className="flex-grow flex flex-col justify-center py-6">
+            {settings.qr_code_url ? (
+              <div className="text-center bg-[#FDFCFB] p-8 rounded-3xl border border-border shadow-inner relative group/qr">
+                <p className="text-[9px] uppercase tracking-widest text-foreground/30 font-black mb-4">Active Deployment</p>
+                <div className="relative inline-block">
+                  <img src={settings.qr_code_url} alt="QR Code" className="mx-auto w-56 h-56 object-contain group-hover/qr:scale-105 transition-transform duration-500" />
+                  <div className="absolute inset-0 bg-white/20 opacity-0 group-hover/qr:opacity-100 transition-opacity pointer-events-none" />
+                </div>
+              </div>
+            ) : (
+              <div className="aspect-square bg-muted/30 rounded-3xl flex flex-col items-center justify-center text-foreground/20 p-12 text-center border-2 border-dashed border-border">
+                <ImageIcon size={64} className="mb-4 opacity-10" />
+                <p className="text-xs font-black uppercase tracking-widest">No QR Deployed</p>
+              </div>
+            )}
           </div>
-          <SubmitButton disabled={qrUploading || !qrFile || !secretCode}>{qrUploading ? "Uploading..." : "Deploy QR Code"}</SubmitButton>
+          <div className="pt-4 border-t border-border/50">
+            <label htmlFor="qr-file" className="block text-[10px] font-black text-foreground/40 mb-3 uppercase tracking-widest">Replace Asset</label>
+            <input id="qr-file" type="file" accept="image/*" onChange={(e) => setQrFile(e.target.files?.[0] || null)}
+              className="w-full text-xs text-foreground/70 file:mr-4 file:py-2 file:px-4 file:border-0 file:text-xs file:font-bold file:bg-primary/10 file:text-primary hover:file:bg-primary/20 file:cursor-pointer border border-border p-2 rounded-xl bg-background/50 mb-6" />
+            <SubmitButton disabled={qrUploading || !qrFile || !secretCode} icon={Plus}>{qrUploading ? "Uploading..." : "Deploy New QR"}</SubmitButton>
+          </div>
         </form>
       </div>
     </div>
@@ -525,7 +614,6 @@ function AdminManager() {
     setMessage("");
     try {
       if (editingAdmin) {
-        // Only password change is supported for existing admins via this form
         if (password) {
            const res = await fetch(`/api/admin/users/${editingAdmin.id}/password`, {
              method: "PATCH",
@@ -533,7 +621,7 @@ function AdminManager() {
              body: JSON.stringify({ password }),
            });
            if (!res.ok) throw new Error((await res.json()).error || "Update failed");
-           setMessage(`Password for ${editingAdmin.username} updated!`);
+           setMessage(`Credentials for ${editingAdmin.username} updated!`);
         }
       } else {
         const res = await fetch("/api/admin/users", {
@@ -543,7 +631,7 @@ function AdminManager() {
         });
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || "Failed");
-        setMessage(`New admin account "${username}" created!`);
+        setMessage(`New staff account "${username}" provisioned!`);
       }
       
       handleCancel();
@@ -567,55 +655,58 @@ function AdminManager() {
   }
 
   async function handleDelete(id: number, username: string) {
-    if (!confirm(`Permanently remove admin "${username}"? This will revoke all access immediately.`)) return;
+    if (!confirm(`Permanently terminate admin "${username}"? This will revoke all access immediately.`)) return;
     const res = await fetch(`/api/admin/users/${id}`, { method: "DELETE", headers: authHeaders() });
-    if (!res.ok) { const d = await res.json(); setMessage(d.error || "Delete failed"); return; }
+    if (!res.ok) { const d = await res.json(); setMessage(d.error || "Action failed"); return; }
     fetchAdmins();
   }
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
+    <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
       <div className="lg:col-span-5">
-        <div className="bg-card border border-border p-8 rounded-xl shadow-sm sticky top-28">
+        <div className="bg-white border border-border p-6 lg:p-8 rounded-3xl shadow-sm lg:sticky lg:top-32">
           <h2 className="font-serif text-2xl text-foreground mb-6 flex items-center gap-2">
             {editingAdmin ? <Key size={20} className="text-primary" /> : <Plus size={20} className="text-primary" />}
-            {editingAdmin ? `Change Password: ${editingAdmin.username}` : "Add New Administrator"}
+            {editingAdmin ? "Reset Password" : "New Administrator"}
           </h2>
           {message && <StatusMessage message={message} />}
           <form onSubmit={handleCreate} className="space-y-6">
             {!editingAdmin && (
               <InputField id="new-username" label="Username" value={username} onChange={setUsername} placeholder="e.g. kcm_admin_1" />
             )}
-            <InputField id="new-password" label={editingAdmin ? "New Password" : "Password"} type="password" value={password} onChange={setPassword} placeholder="Minimum 6 characters" />
+            <InputField id="new-password" label={editingAdmin ? "New Credentials" : "Password"} type="password" value={password} onChange={setPassword} placeholder="Minimum 6 characters" />
 
             {!editingAdmin && (
-              <div className="bg-secondary/20 p-6 rounded-lg space-y-4">
-                <p className="text-xs font-bold text-foreground/60 uppercase tracking-widest border-b border-border/50 pb-2">Assign Permissions</p>
+              <div className="bg-background/40 p-5 rounded-2xl border border-border/50 space-y-4">
+                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-foreground/30 border-b border-border/20 pb-3">Access Control Permissions</p>
                 {([
-                  { key: "canEditGallery", label: "Manage Gallery Content", icon: ImageIcon },
-                  { key: "canEditSiteSettings", label: "Edit Address & Contact", icon: Settings },
-                  { key: "canEditFinancials", label: "Manage Bank & QR", icon: CreditCard },
-                  { key: "canManageAdmins", label: "System Administration", icon: Shield },
+                  { key: "canEditGallery", label: "Gallery Management", icon: ImageIcon },
+                  { key: "canEditSiteSettings", label: "Site Metadata & Identity", icon: Settings },
+                  { key: "canEditFinancials", label: "Financial Data & QR", icon: CreditCard },
+                  { key: "canManageAdmins", label: "Root System Administration", icon: Shield },
                 ] as const).map((p) => (
-                  <label key={p.key} className="flex items-center justify-between cursor-pointer group p-2 hover:bg-background rounded transition-colors">
+                  <label key={p.key} className="flex items-center justify-between cursor-pointer group px-1">
                     <div className="flex items-center gap-3">
-                      <p.icon size={14} className="text-foreground/40 group-hover:text-primary transition-colors" />
-                      <span className="text-xs font-medium text-foreground/80">{p.label}</span>
+                      <p.icon size={14} className="text-foreground/30 group-hover:text-primary transition-colors" />
+                      <span className="text-xs font-bold text-foreground/60">{p.label}</span>
+                    </div>
+                    <div className={`w-8 h-4 rounded-full transition-colors relative ${perms[p.key] ? "bg-primary" : "bg-foreground/10"}`}>
+                      <div className={`absolute top-0.5 w-3 h-3 bg-white rounded-full transition-transform ${perms[p.key] ? "left-4.5" : "left-0.5"}`} />
                     </div>
                     <input type="checkbox" checked={perms[p.key]}
                       onChange={(e) => setPerms((prev) => ({ ...prev, [p.key]: e.target.checked }))}
-                      className="w-4 h-4 accent-primary rounded cursor-pointer" />
+                      className="hidden" />
                   </label>
                 ))}
               </div>
             )}
 
             <div className="flex gap-3 pt-2">
-              <SubmitButton disabled={(!editingAdmin && !username) || !password}>
-                {editingAdmin ? "Reset Password" : "Create Account"}
+              <SubmitButton disabled={(!editingAdmin && !username) || !password} icon={editingAdmin ? Key : Plus}>
+                {editingAdmin ? "Update Security" : "Provision Account"}
               </SubmitButton>
               {editingAdmin && (
-                <button type="button" onClick={handleCancel} className="flex-1 border border-border text-foreground py-3 font-bold uppercase text-xs hover:bg-card transition-colors rounded-lg">
+                <button type="button" onClick={handleCancel} className="flex-1 border border-border text-foreground py-3 font-bold uppercase text-[10px] tracking-widest hover:bg-background transition-all rounded-xl active:scale-95">
                   Cancel
                 </button>
               )}
@@ -625,54 +716,59 @@ function AdminManager() {
       </div>
 
       <div className="lg:col-span-7">
-        <h2 className="font-serif text-2xl text-foreground mb-6">Staff Accounts ({adminList.length})</h2>
-        {loading ? <p className="text-foreground/40 italic">Loading staff list...</p> : (
-          <div className="grid grid-cols-1 gap-4">
+        <h2 className="font-serif text-2xl lg:text-3xl text-foreground font-bold mb-8">System Administrators</h2>
+        {loading ? (
+          <div className="flex flex-col items-center justify-center py-20 text-foreground/20 italic">
+            <div className="w-8 h-8 border-2 border-primary/20 border-t-primary rounded-full animate-spin mb-4" />
+            <p className="text-xs font-black uppercase tracking-widest">Fetching Personnel...</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 gap-6">
             {adminList.map((admin) => (
-              <div key={admin.id} className="bg-card border border-border p-6 rounded-xl shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-6 hover:border-primary/30 transition-all duration-300">
+              <div key={admin.id} className="bg-white border border-border p-6 rounded-3xl shadow-sm flex flex-col lg:flex-row lg:items-center justify-between gap-8 hover:border-primary/20 transition-all duration-300">
                 <div className="flex-grow">
-                  <div className="flex items-center gap-3 mb-4">
-                    <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-lg">
+                  <div className="flex items-center gap-4 mb-6">
+                    <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary font-serif font-black text-xl shadow-inner border border-primary/10">
                       {admin.username[0].toUpperCase()}
                     </div>
                     <div>
                       <div className="flex items-center gap-2">
-                        <span className="font-bold text-foreground text-lg">{admin.username}</span>
+                        <span className="font-serif text-xl font-bold text-foreground">{admin.username}</span>
                         {admin.role === "super_admin" && (
-                          <span className="text-[9px] bg-primary text-white font-black px-2 py-0.5 rounded tracking-tighter">ROOT</span>
+                          <span className="text-[8px] bg-primary/10 text-primary border border-primary/20 font-black px-2 py-0.5 rounded uppercase tracking-tighter">System Root</span>
                         )}
                       </div>
-                      <p className="text-[10px] text-foreground/40 uppercase tracking-widest mt-0.5">Administrator ID: #{admin.id}</p>
+                      <p className="text-[10px] text-foreground/30 uppercase tracking-[0.2em] font-black mt-1">Staff Access Level</p>
                     </div>
                   </div>
                   <div className="flex flex-wrap gap-2">
                     {([
-                      { key: "canEditGallery" as const, label: "Gallery", color: "text-blue-600 bg-blue-50" },
-                      { key: "canEditSiteSettings" as const, label: "Settings", color: "text-green-600 bg-green-50" },
-                      { key: "canEditFinancials" as const, label: "Financial", color: "text-amber-600 bg-amber-50" },
-                      { key: "canManageAdmins" as const, label: "System", color: "text-purple-600 bg-purple-50" },
+                      { key: "canEditGallery" as const, label: "Gallery", color: "text-blue-600 bg-blue-50 border-blue-200" },
+                      { key: "canEditSiteSettings" as const, label: "Metadata", color: "text-green-600 bg-green-50 border-green-200" },
+                      { key: "canEditFinancials" as const, label: "Financial", color: "text-amber-600 bg-amber-50 border-amber-200" },
+                      { key: "canManageAdmins" as const, label: "Systems", color: "text-purple-600 bg-purple-50 border-purple-200" },
                     ]).map((p) => (
                       <button key={p.key} onClick={() => admin.role !== "super_admin" && handleTogglePerm(admin.id, p.key, admin[p.key])}
                         disabled={admin.role === "super_admin"}
-                        className={`text-[10px] font-bold px-3 py-1 rounded-full transition-all flex items-center gap-1.5 border ${
+                        className={`text-[9px] font-black px-3 py-1 rounded-full transition-all flex items-center gap-2 border ${
                           admin[p.key] 
-                            ? `${p.color} border-current` 
-                            : "bg-muted text-foreground/20 border-transparent grayscale"
-                        } ${admin.role === "super_admin" ? "cursor-default" : "cursor-pointer hover:opacity-80 active:scale-95"}`}>
-                        <div className={`w-1.5 h-1.5 rounded-full ${admin[p.key] ? "bg-current" : "bg-foreground/20"}`}></div>
-                        {p.label}
+                            ? `${p.color} shadow-sm shadow-current/5` 
+                            : "bg-muted text-foreground/20 border-transparent grayscale opacity-50"
+                        } ${admin.role === "super_admin" ? "cursor-default" : "cursor-pointer hover:scale-105 active:scale-95"}`}>
+                        <div className={`w-1 h-1 rounded-full ${admin[p.key] ? "bg-current shadow-[0_0_4px_currentColor]" : "bg-foreground/20"}`} />
+                        {p.label.toUpperCase()}
                       </button>
                     ))}
                   </div>
                 </div>
-                <div className="flex items-center gap-4 sm:flex-col sm:items-end sm:gap-2">
+                <div className="flex items-center gap-6 lg:flex-col lg:items-end lg:gap-3 lg:border-l lg:border-border/50 lg:pl-8">
                   {admin.role !== "super_admin" && (
                     <>
-                      <button onClick={() => setEditingAdmin(admin)} className="flex items-center gap-2 text-[10px] font-bold text-primary uppercase hover:underline">
-                        <Key size={12} /> Reset Password
+                      <button onClick={() => setEditingAdmin(admin)} className="flex items-center gap-2 text-[10px] font-black text-primary uppercase tracking-widest hover:text-primary/70 transition-colors group">
+                        <Key size={14} className="group-hover:rotate-12 transition-transform" /> Reset
                       </button>
-                      <button onClick={() => handleDelete(admin.id, admin.username)} className="flex items-center gap-2 text-[10px] font-bold text-destructive uppercase hover:underline">
-                        <Trash2 size={12} /> Terminate
+                      <button onClick={() => handleDelete(admin.id, admin.username)} className="flex items-center gap-2 text-[10px] font-black text-destructive uppercase tracking-widest hover:text-destructive/70 transition-colors group">
+                        <Trash2 size={14} className="group-hover:shake" /> Terminate
                       </button>
                     </>
                   )}
@@ -728,7 +824,7 @@ function HeroManager() {
           body: JSON.stringify({ title, description, showLogo, btnPrimaryText, btnPrimaryLink, btnSecondaryText, btnSecondaryLink, sortOrder }),
         });
         if (!res.ok) throw new Error("Update failed");
-        setMessage("Slide metadata updated!");
+        setMessage("Slide content updated!");
       } else {
         if (!file) return;
         const fd = new FormData();
@@ -742,7 +838,7 @@ function HeroManager() {
           body: fd,
         });
         if (!res.ok) throw new Error("Upload failed");
-        setMessage("Slide uploaded!");
+        setMessage("New slide deployed!");
       }
       handleCancel(); fetchSlides();
     } catch (err: any) { setMessage(err.message); } finally { setSaving(false); }
@@ -769,74 +865,94 @@ function HeroManager() {
   }
 
   async function handleDelete(id: number) {
-    if (!confirm("Delete this slide?")) return;
+    if (!confirm("Delete this slide permanently?")) return;
     await fetch(`/api/admin/hero-slides/${id}`, { method: "DELETE", headers: authHeaders() });
     fetchSlides();
   }
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
+    <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
       <div className="lg:col-span-5">
-        <div className="bg-card border border-border p-8 rounded-xl shadow-sm sticky top-28">
+        <div className="bg-white border border-border p-6 lg:p-8 rounded-2xl shadow-sm lg:sticky lg:top-32">
           <h2 className="font-serif text-2xl text-foreground mb-6 flex items-center gap-2">
             {editingSlide ? <Pencil size={20} className="text-primary" /> : <Plus size={20} className="text-primary" />}
-            {editingSlide ? "Edit Slide Content" : "Add Hero Slide"}
+            {editingSlide ? "Edit Slide" : "New Hero Slide"}
           </h2>
           {message && <StatusMessage message={message} />}
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-5">
             {!editingSlide && (
-              <div className="mb-4">
-                <label className="block text-xs font-bold text-foreground/60 uppercase mb-2">Slide Image</label>
-                <input id="hero-file" type="file" accept="image/*" onChange={(e) => setFile(e.target.files?.[0] || null)} required className="w-full text-xs border border-border p-2 rounded" />
+              <div className="mb-2">
+                <label className="block text-xs font-bold text-foreground/40 uppercase tracking-widest mb-2">Background Image</label>
+                <input id="hero-file" type="file" accept="image/*" onChange={(e) => setFile(e.target.files?.[0] || null)} required className="w-full text-xs text-foreground/70 file:mr-4 file:py-2 file:px-4 file:border-0 file:text-xs file:font-bold file:bg-primary/10 file:text-primary hover:file:bg-primary/20 file:transition-colors file:cursor-pointer rounded-xl border border-border p-2 bg-background/50" />
               </div>
             )}
-            <InputField id="hero-title" label="Main Title" value={title} onChange={setTitle} />
+            <InputField id="hero-title" label="Main Heading" value={title} onChange={setTitle} placeholder="e.g. Welcome to the Sanctuary" />
             <div className="space-y-2">
-              <label className="block text-sm font-bold text-foreground/80 uppercase">Description</label>
-              <textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={3} className="w-full px-4 py-3 border border-border bg-background text-foreground rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50" />
+              <label className="block text-xs font-bold text-foreground/40 uppercase tracking-widest mb-2">Description / Mission</label>
+              <textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={3} className="w-full px-4 py-3 border border-border bg-background/50 text-foreground rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm font-medium" placeholder="A short description..." />
             </div>
             
-            <div className="grid grid-cols-2 gap-4">
-              <InputField id="btn1-t" label="Button 1 Text" value={btnPrimaryText} onChange={setBtnPrimaryText} />
-              <InputField id="btn1-l" label="Button 1 Link" value={btnPrimaryLink} onChange={setBtnPrimaryLink} />
-              <InputField id="btn2-t" label="Button 2 Text" value={btnSecondaryText} onChange={setBtnSecondaryText} />
-              <InputField id="btn2-l" label="Button 2 Link" value={btnSecondaryLink} onChange={setBtnSecondaryLink} />
+            <div className="bg-background/40 p-4 rounded-xl border border-border/50 space-y-4">
+              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-foreground/30">Button Configuration</p>
+              <div className="grid grid-cols-2 gap-4">
+                <InputField id="btn1-t" label="Btn 1 Text" value={btnPrimaryText} onChange={setBtnPrimaryText} />
+                <InputField id="btn1-l" label="Btn 1 Link" value={btnPrimaryLink} onChange={setBtnPrimaryLink} />
+                <InputField id="btn2-t" label="Btn 2 Text" value={btnSecondaryText} onChange={setBtnSecondaryText} />
+                <InputField id="btn2-l" label="Btn 2 Link" value={btnSecondaryLink} onChange={setBtnSecondaryLink} />
+              </div>
             </div>
 
-            <div className="flex items-center gap-4 py-2">
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input type="checkbox" checked={showLogo} onChange={(e) => setShowLogo(e.target.checked)} className="w-4 h-4" />
-                <span className="text-sm font-bold text-foreground/70">Show Temple Logo</span>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 py-2 px-1">
+              <label className="flex items-center gap-3 cursor-pointer group">
+                <div className={`w-10 h-6 rounded-full transition-colors relative ${showLogo ? "bg-primary" : "bg-foreground/20"}`}>
+                  <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-transform ${showLogo ? "left-5" : "left-1"}`} />
+                </div>
+                <input type="checkbox" checked={showLogo} onChange={(e) => setShowLogo(e.target.checked)} className="hidden" />
+                <span className="text-xs font-bold text-foreground/70 uppercase tracking-widest">Show Logo</span>
               </label>
-              <div className="flex-grow">
+              <div className="w-24">
                 <InputField id="hero-sort" label="Order" type="number" value={String(sortOrder)} onChange={(v) => setSortOrder(parseInt(v) || 0)} />
               </div>
             </div>
 
             <div className="flex gap-3 pt-4">
-              <SubmitButton disabled={saving || (!editingSlide && !file)}>{saving ? "Saving..." : editingSlide ? "Update Slide" : "Create Slide"}</SubmitButton>
-              {editingSlide && <button type="button" onClick={handleCancel} className="px-6 py-2 border border-border text-xs uppercase font-bold rounded">Cancel</button>}
+              <SubmitButton disabled={saving || (!editingSlide && !file)}>{saving ? "Processing..." : editingSlide ? "Save Changes" : "Create Slide"}</SubmitButton>
+              {editingSlide && <button type="button" onClick={handleCancel} className="flex-1 border border-border text-foreground py-3 font-bold uppercase text-[10px] tracking-widest hover:bg-background transition-all rounded-xl active:scale-95">Cancel</button>}
             </div>
           </form>
         </div>
       </div>
       <div className="lg:col-span-7">
-        <h2 className="font-serif text-2xl text-foreground mb-6">Active Slides ({slides.length})</h2>
+        <h2 className="font-serif text-2xl lg:text-3xl text-foreground font-bold mb-8">Active Slides</h2>
         <div className="grid grid-cols-1 gap-6">
           {slides.map((s: any) => (
-            <div key={s.id} className="bg-card border border-border rounded-xl overflow-hidden flex gap-4 p-4 items-center">
-              <img src={s.url} alt="" className="w-32 h-20 object-cover rounded shadow-sm" />
-              <div className="flex-grow min-w-0">
-                <h4 className="font-bold text-foreground truncate">{s.title || "No Title"}</h4>
-                <p className="text-xs text-foreground/50 truncate">{s.description || "No description"}</p>
-              </div>
-              <div className="flex gap-2">
-                <button onClick={() => handleEdit(s)} className="p-2 text-primary hover:bg-primary/10 rounded"><Pencil size={18} /></button>
-                <button onClick={() => handleDelete(s.id)} className="p-2 text-destructive hover:bg-destructive/10 rounded"><Trash2 size={18} /></button>
+            <div key={s.id} className="bg-white border border-border rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all group p-4 lg:p-6">
+              <div className="flex flex-col sm:flex-row gap-6 items-start sm:items-center">
+                <div className="relative w-full sm:w-40 aspect-video rounded-xl overflow-hidden shadow-inner bg-muted shrink-0">
+                  <img src={s.url} alt="" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                  <div className="absolute top-2 left-2 bg-black/60 backdrop-blur-md text-white text-[8px] font-black px-2 py-0.5 rounded uppercase tracking-widest">Order {s.sortOrder}</div>
+                </div>
+                <div className="flex-grow min-w-0">
+                  <h4 className="font-serif text-lg font-bold text-foreground truncate mb-1">{s.title || "Untitled Slide"}</h4>
+                  <p className="text-xs text-foreground/50 line-clamp-2 leading-relaxed mb-3">{s.description || "No mission description defined for this slide."}</p>
+                  <div className="flex flex-wrap gap-2">
+                    <span className="text-[8px] font-black uppercase tracking-widest px-2 py-1 bg-primary/10 text-primary rounded border border-primary/20">{s.btnPrimaryText}</span>
+                    <span className="text-[8px] font-black uppercase tracking-widest px-2 py-1 bg-foreground/5 text-foreground/60 rounded border border-foreground/10">{s.btnSecondaryText}</span>
+                  </div>
+                </div>
+                <div className="flex sm:flex-col gap-2 w-full sm:w-auto">
+                  <button onClick={() => handleEdit(s)} className="flex-1 sm:flex-initial p-3 text-primary hover:bg-primary/10 rounded-xl transition-colors border border-transparent hover:border-primary/20"><Pencil size={18} /></button>
+                  <button onClick={() => handleDelete(s.id)} className="flex-1 sm:flex-initial p-3 text-destructive hover:bg-destructive/10 rounded-xl transition-colors border border-transparent hover:border-destructive/20"><Trash2 size={18} /></button>
+                </div>
               </div>
             </div>
           ))}
-          {slides.length === 0 && <p className="text-center py-20 text-foreground/30 italic border border-dashed border-border rounded-xl">No slides added yet. Using default hero.</p>}
+          {slides.length === 0 && (
+            <div className="text-center py-24 bg-white border-2 border-dashed border-border rounded-3xl">
+              <Layout size={48} className="mx-auto text-foreground/10 mb-4" />
+              <p className="text-foreground/40 italic font-medium">No slides configured. Default content active.</p>
+            </div>
+          )}
         </div>
       </div>
     </div>
@@ -853,9 +969,9 @@ function InputField({ id, label, value, onChange, type = "text", placeholder }: 
 }) {
   return (
     <div className="space-y-2">
-      <label htmlFor={id} className="block text-sm font-bold text-foreground/80 uppercase tracking-tight ml-1">{label}</label>
+      <label htmlFor={id} className="block text-[10px] font-black text-foreground/40 uppercase tracking-[0.2em] ml-1">{label}</label>
       <input id={id} type={type} value={value} onChange={(e) => onChange(e.target.value)} placeholder={placeholder}
-        className="w-full px-4 py-3 border border-border bg-background text-foreground rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all placeholder:text-foreground/20" />
+        className="w-full px-4 py-3.5 border border-border bg-background/50 text-foreground rounded-xl focus:outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all placeholder:text-foreground/10 text-sm font-medium" />
     </div>
   );
 }
@@ -863,21 +979,22 @@ function InputField({ id, label, value, onChange, type = "text", placeholder }: 
 function SubmitButton({ children, disabled, icon: Icon }: { children: React.ReactNode; disabled?: boolean; icon?: any }) {
   return (
     <button type="submit" disabled={disabled}
-      className="w-full bg-primary text-primary-foreground py-4 px-6 rounded-lg font-bold tracking-widest uppercase text-xs hover:bg-primary/90 hover:shadow-lg active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-sm">
-      {Icon && <Icon size={16} />}
-      {children}
+      className="group w-full bg-primary text-white py-4 px-6 rounded-xl font-black tracking-[0.2em] uppercase text-[10px] hover:bg-primary/90 shadow-lg shadow-primary/20 active:scale-[0.98] transition-all disabled:opacity-30 disabled:grayscale disabled:scale-100 disabled:cursor-not-allowed flex items-center justify-center gap-3 overflow-hidden relative">
+      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:animate-[shimmer_2s_infinite]" />
+      {Icon && <Icon size={16} className="group-hover:rotate-12 transition-transform" />}
+      <span className="relative z-10">{children}</span>
     </button>
   );
 }
 
 function StatusMessage({ message }: { message: string }) {
-  const isSuccess = message.toLowerCase().includes("success") || message.toLowerCase().includes("updated") || message.toLowerCase().includes("created") || message.toLowerCase().includes("deployed");
+  const isSuccess = message.toLowerCase().includes("success") || message.toLowerCase().includes("updated") || message.toLowerCase().includes("created") || message.toLowerCase().includes("deployed") || message.toLowerCase().includes("provisioned");
   return (
-    <div className={`text-xs font-bold px-5 py-4 rounded-lg mb-6 flex items-center gap-3 animate-in fade-in zoom-in duration-300 ${isSuccess
-      ? "bg-green-500/10 border border-green-500/30 text-green-700"
-      : "bg-destructive/10 border border-destructive/30 text-destructive"
+    <div className={`text-[10px] font-black uppercase tracking-widest px-6 py-4 rounded-2xl mb-8 flex items-center gap-4 animate-in fade-in slide-in-from-top-4 duration-500 shadow-sm border ${isSuccess
+      ? "bg-emerald-50 border-emerald-100 text-emerald-600"
+      : "bg-rose-50 border-rose-100 text-rose-600"
     }`}>
-      <div className={`w-2 h-2 rounded-full ${isSuccess ? "bg-green-600" : "bg-destructive"} animate-pulse`}></div>
+      <div className={`w-2 h-2 rounded-full ${isSuccess ? "bg-emerald-500 shadow-[0_0_8px_theme(colors.emerald.500)]" : "bg-rose-500 shadow-[0_0_8px_theme(colors.rose.500)]"} animate-pulse`} />
       {message}
     </div>
   );
