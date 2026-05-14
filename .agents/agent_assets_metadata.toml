@@ -1,0 +1,38 @@
+uploads = []
+outputs = []
+
+[[generated]]
+id = "0E9wmDICq8j1g3M-E2Rzy"
+uri = "file://artifacts/gosuala/src/assets/images/temple-exterior.png"
+type = "image"
+title = "Serene Karnataka temple exterior"
+
+[[generated]]
+id = "zd6ZjlJ2Cr4CVSbkrJ4rx"
+uri = "file://artifacts/gosuala/src/assets/images/temple-cows.png"
+type = "image"
+title = "Sacred cows in courtyard"
+
+[[generated]]
+id = "CvVaQoGQGgBsTZD8i1hpc"
+uri = "file://artifacts/gosuala/src/assets/images/oil-lamps.png"
+type = "image"
+title = "Glowing oil lamps diyas"
+
+[[generated]]
+id = "jac9nNBS1i3w--L9raibV"
+uri = "file://artifacts/gosuala/src/assets/images/marigolds.png"
+type = "image"
+title = "Marigold flower garlands"
+
+[[generated]]
+id = "n0mpByQOKRnc1Q7AqNu0r"
+uri = "file://artifacts/gosuala/src/assets/images/priest-puja.png"
+type = "image"
+title = "Temple priest puja"
+
+[[generated]]
+id = "__TUTxEO_fX4E5Rk0XJ_y"
+uri = "file://artifacts/gosuala/src/assets/images/devotees.png"
+type = "image"
+title = "Devotees at the temple"
