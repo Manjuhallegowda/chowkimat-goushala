@@ -34,14 +34,14 @@ export function Navbar() {
           : "bg-background/80 backdrop-blur-sm py-3"
       }`}
     >
-      <div className="container mx-auto px-4 md:px-6">
+      <div className="w-full px-4 md:px-10">
         <div className="flex items-center justify-between gap-4">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-3 group shrink-0" data-testid="link-home-logo">
             <img
               src={logoImg}
               alt="Shree Kalyan Chowkimath Kamadhenu Goushala Logo"
-              className="h-12 w-12 object-contain group-hover:scale-105 transition-transform duration-300"
+              className="h-12 w-12 md:h-14 md:w-14 object-contain group-hover:scale-105 transition-transform duration-300"
             />
             <div className="flex flex-col leading-tight">
               <span className="font-serif text-sm md:text-base font-semibold tracking-wide text-foreground leading-snug">
