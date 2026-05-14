@@ -2,7 +2,7 @@
 -- Default password: "admin123" (SHA-256 hash)
 -- CHANGE THIS IMMEDIATELY after first login!
 INSERT OR IGNORE INTO admins (username, password_hash, role, can_manage_admins, can_edit_financials, can_edit_site_settings, can_edit_gallery)
-VALUES ('admin', '240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9', 'super_admin', 1, 1, 1, 1);
+VALUES ('Manjuhalleygowda', 'b09ceea8e86e274be669736dffcd8465a5b7e47b3650ba4011960f667a41887b', 'super_admin', 1, 1, 1, 1);
 
 -- Seed default site settings
 INSERT OR IGNORE INTO site_settings (key, value) VALUES ('address_line1', 'Sri Gosuala Temple Road');
