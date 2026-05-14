@@ -9,15 +9,17 @@ interface Translations {
   };
 }
 
-// Comprehensive dictionary for the app
 const dictionary: Translations = {
-  "Gosuala": { en: "Gosuala", kn: "ಗೋಶಾಲೆ" },
+  "SiteName": { en: "Shree Kalyan Chowkimath Kamadhenu Goushala", kn: "ಶ್ರೀ ಕಲ್ಯಾಣ ಚೌಕಿಮಠ ಕಾಮಧೇನು ಗೋಶಾಲಾ" },
+  "SiteNameShort": { en: "Kamadhenu Goushala", kn: "ಕಾಮಧೇನು ಗೋಶಾಲಾ" },
+  "SiteSubtitle": { en: "Seva Trust", kn: "ಸೇವಾ ಟ್ರಸ್ಟ್" },
+  "Gosuala": { en: "Kamadhenu Goushala", kn: "ಕಾಮಧೇನು ಗೋಶಾಲಾ" },
   "Home": { en: "Home", kn: "ಮನೆ" },
   "About": { en: "About", kn: "ನಮ್ಮ ಬಗ್ಗೆ" },
   "Gallery": { en: "Gallery", kn: "ಗ್ಯಾಲರಿ" },
   "Donate": { en: "Donate", kn: "ದಾನ" },
   "Contact": { en: "Contact", kn: "ಸಂಪರ್ಕ" },
-  "Welcome to Gosuala": { en: "Welcome to Gosuala", kn: "ಗೋಶಾಲೆಗೆ ಸ್ವಾಗತ" },
+  "Welcome to Gosuala": { en: "Shree Kalyan Chowkimath Kamadhenu Goushala", kn: "ಶ್ರೀ ಕಲ್ಯಾಣ ಚೌಕಿಮಠ ಕಾಮಧೇನು ಗೋಶಾಲಾ" },
   "Our Mission": { en: "Our Mission", kn: "ನಮ್ಮ ಧ್ಯೇಯ" },
   "About Us": { en: "About Us", kn: "ನಮ್ಮ ಬಗ್ಗೆ" },
   "Make a Donation": { en: "Make a Donation", kn: "ದಾನ ಮಾಡಿ" },
@@ -40,6 +42,20 @@ const dictionary: Translations = {
   "Address": { en: "Address", kn: "ವಿಳಾಸ" },
   "Monthly Support": { en: "Monthly Support", kn: "ಮಾಸಿಕ ಬೆಂಬಲ" },
   "One-time Gift": { en: "One-time Gift", kn: "ಒಂದು ಬಾರಿಯ ಉಡುಗೊರೆ" },
+  "Our Activities": { en: "Our Activities", kn: "ನಮ್ಮ ಚಟುವಟಿಕೆಗಳು" },
+  "Upcoming Events": { en: "Upcoming Events", kn: "ಮುಂಬರುವ ಕಾರ್ಯಕ್ರಮಗಳು" },
+  "Announcements": { en: "Announcements", kn: "ಪ್ರಕಟಣೆಗಳು" },
+  "Our Impact": { en: "Our Impact", kn: "ನಮ್ಮ ಪ್ರಭಾವ" },
+  "Cows Protected": { en: "Cows Protected", kn: "ರಕ್ಷಿಸಿದ ಗೋವುಗಳು" },
+  "Years of Service": { en: "Years of Service", kn: "ಸೇವಾ ವರ್ಷಗಳು" },
+  "Devotees Served": { en: "Devotees Served", kn: "ಸೇವೆ ಸಲ್ಲಿಸಿದ ಭಕ್ತರು" },
+  "Daily Rituals": { en: "Daily Rituals", kn: "ದೈನಂದಿನ ಆಚರಣೆಗಳು" },
+  "Cow Care & Welfare": { en: "Cow Care & Welfare", kn: "ಗೋ ಸಂರಕ್ಷಣೆ" },
+  "Go-Pooja": { en: "Go-Pooja", kn: "ಗೋ-ಪೂಜೆ" },
+  "Gau Daan": { en: "Gau Daan", kn: "ಗೌ ದಾನ" },
+  "Annadanam": { en: "Annadanam", kn: "ಅನ್ನದಾನ" },
+  "Spiritual Discourses": { en: "Spiritual Discourses", kn: "ಆಧ್ಯಾತ್ಮಿಕ ಪ್ರವಚನಗಳು" },
+  "Vedic Education": { en: "Vedic Education", kn: "ವೈದಿಕ ಶಿಕ್ಷಣ" },
 };
 
 interface LanguageContextType {
