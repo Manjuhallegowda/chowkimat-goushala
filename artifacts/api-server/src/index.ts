@@ -451,6 +451,53 @@ app.delete("/api/admin/gallery/:id", async (c) => {
   return c.json({ success: true });
 });
 
+// ── Gallery: Admin update metadata ──────────────────────────────────
+app.patch("/api/admin/gallery/:id", async (c) => {
+  if (!c.get("adminPerms").canEditGallery) {
+    return c.json({ error: "You don't have permission to manage gallery" }, 403);
+  }
+
+  const id = parseInt(c.req.param("id"), 10);
+  if (isNaN(id)) return c.json({ error: "Invalid ID" }, 400);
+
+  const body = await c.req.json<{
+    alt?: string;
+    aspect?: string;
+    sortOrder?: number;
+  }>();
+
+  const db = createDb(c.env.DB);
+  await db.update(gallery).set({
+    alt: body.alt,
+    aspect: body.aspect,
+    sortOrder: body.sortOrder,
+  }).where(eq(gallery.id, id));
+
+  return c.json({ success: true });
+});
+
+// ── Admin: Change password ──────────────────────────────────────────
+app.patch("/api/admin/users/:id/password", async (c) => {
+  if (!c.get("adminPerms").canManageAdmins) {
+    return c.json({ error: "You don't have permission to manage admins" }, 403);
+  }
+
+  const id = parseInt(c.req.param("id"), 10);
+  if (isNaN(id)) return c.json({ error: "Invalid ID" }, 400);
+
+  const { password } = await c.req.json<{ password: string }>();
+  if (!password || password.length < 6) {
+    return c.json({ error: "Password must be at least 6 characters" }, 400);
+  }
+
+  const passwordHash = await hashPassword(password);
+  const db = createDb(c.env.DB);
+  
+  await db.update(admins).set({ passwordHash }).where(eq(admins.id, id));
+
+  return c.json({ success: true });
+});
+
 // ═════════════════════════════════════════════════════════════════════
 // R2 IMAGE SERVING
 // ═════════════════════════════════════════════════════════════════════

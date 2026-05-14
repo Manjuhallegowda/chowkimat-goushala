@@ -17,4 +17,4 @@ bucket_name = "chowkimat"
 # ── Environment Variables ────────────────────────────────────────────
 [vars]
 ADMIN_JWT_SECRET = "b0eae9ea7781b1e7685e51c42098da9ef1c2ffc27406ca38ea479c1412de9c50"
-FINANCIAL_SECRET_CODE = "1a2bd6d8b1aa6f65513858223a73d57b"
+FINANCIAL_SECRET_CODE = "Manju@8197"
