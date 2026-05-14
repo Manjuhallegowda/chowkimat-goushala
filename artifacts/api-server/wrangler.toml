@@ -1,0 +1,20 @@
+name = "gosuala-api"
+main = "src/index.ts"
+compatibility_date = "2025-05-01"
+
+# ── D1 Database ──────────────────────────────────────────────────────
+[[d1_databases]]
+binding = "DB"
+database_name = "chowkimat"
+database_id = "1224da56-71c7-4016-ad1c-5d40794c6da0"
+migrations_dir = "../../lib/db/migrations"
+
+# ── R2 Bucket ────────────────────────────────────────────────────────
+[[r2_buckets]]
+binding = "BUCKET"
+bucket_name = "chowkimat"
+
+# ── Environment Variables ────────────────────────────────────────────
+[vars]
+ADMIN_JWT_SECRET = "b0eae9ea7781b1e7685e51c42098da9ef1c2ffc27406ca38ea479c1412de9c50"
+FINANCIAL_SECRET_CODE = "1a2bd6d8b1aa6f65513858223a73d57b"

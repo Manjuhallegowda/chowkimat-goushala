@@ -3,15 +3,13 @@
   "compilerOptions": {
     "outDir": "dist",
     "rootDir": "src",
-    "types": ["node"]
+    "types": ["@cloudflare/workers-types", "node"],
+    "typeRoots": ["./node_modules/@types", "./node_modules"]
   },
   "include": ["src"],
   "references": [
     {
       "path": "../../lib/db"
-    },
-    {
-      "path": "../../lib/api-zod"
     }
   ]
 }

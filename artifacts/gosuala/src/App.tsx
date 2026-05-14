@@ -11,6 +11,8 @@ import About from "@/pages/About";
 import Gallery from "@/pages/Gallery";
 import Donate from "@/pages/Donate";
 import Contact from "@/pages/Contact";
+import AdminLogin from "@/pages/admin/Login";
+import AdminDashboard from "@/pages/admin/Dashboard";
 
 // Layout components
 import { Navbar } from "@/components/Navbar";
@@ -18,7 +20,7 @@ import { TempleFooter } from "@/components/TempleFooter";
 
 const queryClient = new QueryClient();
 
-function Router() {
+function PublicRouter() {
   return (
     <div className="min-h-screen flex flex-col w-full selection:bg-primary/20 selection:text-primary">
       <Navbar />
@@ -34,6 +36,16 @@ function Router() {
       </main>
       <TempleFooter />
     </div>
+  );
+}
+
+function Router() {
+  return (
+    <Switch>
+      <Route path="/admin" component={AdminLogin} />
+      <Route path="/admin/dashboard" component={AdminDashboard} />
+      <Route>{() => <PublicRouter />}</Route>
+    </Switch>
   );
 }
 
