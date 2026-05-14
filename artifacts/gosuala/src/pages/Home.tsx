@@ -138,28 +138,28 @@ export default function Home() {
   return (
     <div className="w-full">
       {/* Hero Section */}
-      <section className="relative w-full h-[88vh] min-h-[580px] flex items-center justify-center overflow-hidden">
+      <section className="relative w-full h-[88vh] min-h-[580px] flex items-center justify-center overflow-hidden mt-20">
         <div className="absolute inset-0 z-0">
           <div
             className="absolute inset-0 bg-cover bg-center bg-no-repeat"
             style={{ backgroundImage: `url(${templeExterior})` }}
           />
-          <div className="absolute inset-0 bg-foreground/58 backdrop-blur-[2px]" />
-          <div className="absolute bottom-0 left-0 right-0 h-28 bg-gradient-to-t from-background to-transparent" />
+          <div className="absolute inset-0 bg-foreground/72" />
+          <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-background/40 to-transparent" />
         </div>
 
-        <div className="relative z-10 text-center text-background px-4 max-w-4xl mx-auto flex flex-col items-center">
+        <div className="relative z-10 text-center text-background px-4 max-w-4xl mx-auto flex flex-col items-center justify-center pt-8">
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }}>
             <img
               src={"/kcm_logo.webp"}
               alt="Logo"
-              className="mx-auto mb-4 h-24 w-24 object-contain drop-shadow-2xl"
+              className="mx-auto mb-6 h-28 w-28 object-contain drop-shadow-[0_10px_20px_rgba(0,0,0,0.4)]"
               onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
             />
-            <h1 className="font-serif text-3xl md:text-5xl lg:text-6xl mb-3 tracking-tight drop-shadow-lg leading-tight">
+            <h1 className="font-serif text-3xl md:text-5xl lg:text-6xl mb-4 tracking-tight drop-shadow-[0_4px_8px_rgba(0,0,0,0.8)] leading-tight font-bold">
               {t("Welcome to Gosuala")}
             </h1>
-            <p className="text-base md:text-lg font-light mb-8 max-w-2xl mx-auto opacity-90 leading-relaxed">
+            <p className="text-base md:text-lg font-medium mb-10 max-w-2xl mx-auto opacity-100 leading-relaxed drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
               {language === "kn"
                 ? "ಕರ್ನಾಟಕದ ಹೃದಯದಲ್ಲಿ ಪವಿತ್ರ ಗೋವಿನ ಶಾಶ್ವತ ರಕ್ಷಣೆಗೆ ಮತ್ತು ಆಧ್ಯಾತ್ಮಿಕ ಪರಂಪರೆಯ ಸಂರಕ್ಷಣೆಗೆ ಮೀಸಲಾದ ಪುಣ್ಯ ಕ್ಷೇತ್ರ."
                 : "A sacred sanctuary in the heart of Karnataka, devoted to the eternal care of the holy cow and the preservation of our spiritual heritage."}
@@ -190,7 +190,7 @@ export default function Home() {
       <DecorativeBorder />
 
       {/* Mission Section */}
-      <section className="py-12 px-4 bg-background">
+      <section className="pt-4 pb-12 px-4 bg-background">
         <div className="container mx-auto max-w-4xl text-center">
           <motion.div variants={fadeUp} initial="hidden" whileInView="visible" viewport={{ once: true }}>
             <p className="text-xs tracking-widest uppercase text-primary mb-3">{t("Our Mission")}</p>
