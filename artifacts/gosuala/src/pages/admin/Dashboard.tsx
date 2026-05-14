@@ -29,7 +29,7 @@ function authHeaders(): HeadersInit {
 
 // ── Tabs ────────────────────────────────────────────────────────────
 
-type Tab = "gallery" | "settings" | "financial" | "admins";
+type Tab = "gallery" | "hero" | "settings" | "financial" | "admins";
 
 // ── Component ───────────────────────────────────────────────────────
 
@@ -50,6 +50,7 @@ export default function AdminDashboard() {
 
   const tabs: { key: Tab; label: string; icon: any; show: boolean }[] = [
     { key: "gallery", label: "Gallery", icon: ImageIcon, show: perms.canEditGallery },
+    { key: "hero", label: "Hero Slider", icon: ImageIcon, show: perms.canEditSiteSettings },
     { key: "settings", label: "Site Settings", icon: Settings, show: perms.canEditSiteSettings },
     { key: "financial", label: "Bank & QR", icon: CreditCard, show: perms.canEditFinancials },
     { key: "admins", label: "Manage Admins", icon: Shield, show: perms.canManageAdmins },
@@ -88,6 +89,7 @@ export default function AdminDashboard() {
         {/* Tab Content */}
         <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
           {tab === "gallery" && perms.canEditGallery && <GalleryManager />}
+          {tab === "hero" && perms.canEditSiteSettings && <HeroManager />}
           {tab === "settings" && perms.canEditSiteSettings && <SiteSettingsManager />}
           {tab === "financial" && perms.canEditFinancials && <FinancialSettingsManager />}
           {tab === "admins" && perms.canManageAdmins && <AdminManager />}
@@ -683,6 +685,164 @@ function AdminManager() {
     </div>
   );
 }
+
+// ═════════════════════════════════════════════════════════════════════
+// HERO MANAGER
+// ═════════════════════════════════════════════════════════════════════
+
+function HeroManager() {
+  const [slides, setSlides] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [editingSlide, setEditingSlide] = useState<any>(null);
+  const [message, setMessage] = useState("");
+
+  // Form State
+  const [file, setFile] = useState<File | null>(null);
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [showLogo, setShowLogo] = useState(true);
+  const [btnPrimaryText, setBtnPrimaryText] = useState("Make a Donation");
+  const [btnPrimaryLink, setBtnPrimaryLink] = useState("/donate");
+  const [btnSecondaryText, setBtnSecondaryText] = useState("About Us");
+  const [btnSecondaryLink, setBtnSecondaryLink] = useState("/about");
+  const [sortOrder, setSortOrder] = useState(0);
+
+  const fetchSlides = useCallback(async () => {
+    try {
+      const res = await fetch("/api/admin/hero-slides", { headers: authHeaders() });
+      const data = await res.json();
+      setSlides(data.slides || []);
+    } catch { /* ignore */ } finally { setLoading(false); }
+  }, []);
+
+  useEffect(() => { fetchSlides(); }, [fetchSlides]);
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setSaving(true); setMessage("");
+    try {
+      if (editingSlide) {
+        const res = await fetch(`/api/admin/hero-slides/${editingSlide.id}`, {
+          method: "PATCH", headers: authHeaders(),
+          body: JSON.stringify({ title, description, showLogo, btnPrimaryText, btnPrimaryLink, btnSecondaryText, btnSecondaryLink, sortOrder }),
+        });
+        if (!res.ok) throw new Error("Update failed");
+        setMessage("Slide metadata updated!");
+      } else {
+        if (!file) return;
+        const fd = new FormData();
+        fd.append("file", file); fd.append("title", title);
+        fd.append("description", description); fd.append("showLogo", String(showLogo));
+        fd.append("btnPrimaryText", btnPrimaryText); fd.append("btnPrimaryLink", btnPrimaryLink);
+        fd.append("btnSecondaryText", btnSecondaryText); fd.append("btnSecondaryLink", btnSecondaryLink);
+        fd.append("sortOrder", String(sortOrder));
+        const res = await fetch("/api/admin/hero-slides", {
+          method: "POST", headers: { Authorization: `Bearer ${getToken()}` },
+          body: fd,
+        });
+        if (!res.ok) throw new Error("Upload failed");
+        setMessage("Slide uploaded!");
+      }
+      handleCancel(); fetchSlides();
+    } catch (err: any) { setMessage(err.message); } finally { setSaving(false); }
+  }
+
+  function handleEdit(slide: any) {
+    setEditingSlide(slide);
+    setTitle(slide.title || "");
+    setDescription(slide.description || "");
+    setShowLogo(slide.showLogo);
+    setBtnPrimaryText(slide.btnPrimaryText); setBtnPrimaryLink(slide.btnPrimaryLink);
+    setBtnSecondaryText(slide.btnSecondaryText); setBtnSecondaryLink(slide.btnSecondaryLink);
+    setSortOrder(slide.sortOrder);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  function handleCancel() {
+    setEditingSlide(null); setFile(null); setTitle(""); setDescription(""); setShowLogo(true);
+    setBtnPrimaryText("Make a Donation"); setBtnPrimaryLink("/donate");
+    setBtnSecondaryText("About Us"); setBtnSecondaryLink("/about");
+    setSortOrder(0);
+    const fi = document.getElementById("hero-file") as HTMLInputElement;
+    if (fi) fi.value = "";
+  }
+
+  async function handleDelete(id: number) {
+    if (!confirm("Delete this slide?")) return;
+    await fetch(`/api/admin/hero-slides/${id}`, { method: "DELETE", headers: authHeaders() });
+    fetchSlides();
+  }
+
+  return (
+    <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
+      <div className="lg:col-span-5">
+        <div className="bg-card border border-border p-8 rounded-xl shadow-sm sticky top-28">
+          <h2 className="font-serif text-2xl text-foreground mb-6 flex items-center gap-2">
+            {editingSlide ? <Pencil size={20} className="text-primary" /> : <Plus size={20} className="text-primary" />}
+            {editingSlide ? "Edit Slide Content" : "Add Hero Slide"}
+          </h2>
+          {message && <StatusMessage message={message} />}
+          <form onSubmit={handleSubmit} className="space-y-4">
+            {!editingSlide && (
+              <div className="mb-4">
+                <label className="block text-xs font-bold text-foreground/60 uppercase mb-2">Slide Image</label>
+                <input id="hero-file" type="file" accept="image/*" onChange={(e) => setFile(e.target.files?.[0] || null)} required className="w-full text-xs border border-border p-2 rounded" />
+              </div>
+            )}
+            <InputField id="hero-title" label="Main Title" value={title} onChange={setTitle} />
+            <div className="space-y-2">
+              <label className="block text-sm font-bold text-foreground/80 uppercase">Description</label>
+              <textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={3} className="w-full px-4 py-3 border border-border bg-background text-foreground rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50" />
+            </div>
+            
+            <div className="grid grid-cols-2 gap-4">
+              <InputField id="btn1-t" label="Button 1 Text" value={btnPrimaryText} onChange={setBtnPrimaryText} />
+              <InputField id="btn1-l" label="Button 1 Link" value={btnPrimaryLink} onChange={setBtnPrimaryLink} />
+              <InputField id="btn2-t" label="Button 2 Text" value={btnSecondaryText} onChange={setBtnSecondaryText} />
+              <InputField id="btn2-l" label="Button 2 Link" value={btnSecondaryLink} onChange={setBtnSecondaryLink} />
+            </div>
+
+            <div className="flex items-center gap-4 py-2">
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input type="checkbox" checked={showLogo} onChange={(e) => setShowLogo(e.target.checked)} className="w-4 h-4" />
+                <span className="text-sm font-bold text-foreground/70">Show Temple Logo</span>
+              </label>
+              <div className="flex-grow">
+                <InputField id="hero-sort" label="Order" type="number" value={String(sortOrder)} onChange={(v) => setSortOrder(parseInt(v) || 0)} />
+              </div>
+            </div>
+
+            <div className="flex gap-3 pt-4">
+              <SubmitButton disabled={saving || (!editingSlide && !file)}>{saving ? "Saving..." : editingSlide ? "Update Slide" : "Create Slide"}</SubmitButton>
+              {editingSlide && <button type="button" onClick={handleCancel} className="px-6 py-2 border border-border text-xs uppercase font-bold rounded">Cancel</button>}
+            </div>
+          </form>
+        </div>
+      </div>
+      <div className="lg:col-span-7">
+        <h2 className="font-serif text-2xl text-foreground mb-6">Active Slides ({slides.length})</h2>
+        <div className="grid grid-cols-1 gap-6">
+          {slides.map((s: any) => (
+            <div key={s.id} className="bg-card border border-border rounded-xl overflow-hidden flex gap-4 p-4 items-center">
+              <img src={s.url} alt="" className="w-32 h-20 object-cover rounded shadow-sm" />
+              <div className="flex-grow min-w-0">
+                <h4 className="font-bold text-foreground truncate">{s.title || "No Title"}</h4>
+                <p className="text-xs text-foreground/50 truncate">{s.description || "No description"}</p>
+              </div>
+              <div className="flex gap-2">
+                <button onClick={() => handleEdit(s)} className="p-2 text-primary hover:bg-primary/10 rounded"><Pencil size={18} /></button>
+                <button onClick={() => handleDelete(s.id)} className="p-2 text-destructive hover:bg-destructive/10 rounded"><Trash2 size={18} /></button>
+              </div>
+            </div>
+          ))}
+          {slides.length === 0 && <p className="text-center py-20 text-foreground/30 italic border border-dashed border-border rounded-xl">No slides added yet. Using default hero.</p>}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 
 // ═════════════════════════════════════════════════════════════════════
 // SHARED UI COMPONENTS

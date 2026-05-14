@@ -17,6 +17,23 @@ export const admins = sqliteTable("admins", {
   canEditGallery: integer("can_edit_gallery", { mode: "boolean" }).notNull().default(true),
 });
 
+export const heroSlides = sqliteTable("hero_slides", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  key: text("key").notNull(),
+  url: text("url").notNull(),
+  title: text("title"),
+  description: text("description"),
+  showLogo: integer("show_logo", { mode: "boolean" }).notNull().default(true),
+  btnPrimaryText: text("btn_primary_text").notNull().default("Make a Donation"),
+  btnPrimaryLink: text("btn_primary_link").notNull().default("/donate"),
+  btnSecondaryText: text("btn_secondary_text").notNull().default("About Us"),
+  btnSecondaryLink: text("btn_secondary_link").notNull().default("/about"),
+  sortOrder: integer("sort_order").notNull().default(0),
+});
+
+export type HeroSlide = typeof heroSlides.$inferSelect;
+export type InsertHeroSlide = typeof heroSlides.$inferInsert;
+
 export type Admin = typeof admins.$inferSelect;
 export type InsertAdmin = typeof admins.$inferInsert;
 

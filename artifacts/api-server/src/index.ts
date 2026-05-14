@@ -1,8 +1,8 @@
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { createDb, type Env } from "@workspace/db";
-import { gallery, admins, siteSettings } from "@workspace/db/schema";
-import { eq, asc } from "drizzle-orm";
+import { gallery, admins, siteSettings, heroSlides } from "@workspace/db/schema";
+import { eq, asc, desc } from "drizzle-orm";
 
 type Variables = {
   adminId: number;
@@ -72,8 +72,14 @@ const FINANCIAL_KEYS = [
   "qr_code_key", "qr_code_url",
 ];
 
-// ── Health ──────────────────────────────────────────────────────────
+// ── Health & Public Data ────────────────────────────────────────────
 app.get("/api/healthz", (c) => c.json({ status: "ok" }));
+
+app.get("/api/hero-slides", async (c) => {
+  const db = createDb(c.env.DB);
+  const slides = await db.select().from(heroSlides).orderBy(asc(heroSlides.sortOrder));
+  return c.json({ slides });
+});
 
 // ── Auth: Login ─────────────────────────────────────────────────────
 app.post("/api/admin/login", async (c) => {
@@ -499,6 +505,85 @@ app.patch("/api/admin/users/:id/password", async (c) => {
   const db = createDb(c.env.DB);
   
   await db.update(admins).set({ passwordHash }).where(eq(admins.id, id));
+
+  return c.json({ success: true });
+});
+
+// ═════════════════════════════════════════════════════════════════════
+// HERO SLIDES
+// ═════════════════════════════════════════════════════════════════════
+
+// ── Admin: List slides ──────────────────────────────────────────────
+app.get("/api/admin/hero-slides", async (c) => {
+  const db = createDb(c.env.DB);
+  const slides = await db.select().from(heroSlides).orderBy(asc(heroSlides.sortOrder));
+  return c.json({ slides });
+});
+
+// ── Admin: Upload slide ─────────────────────────────────────────────
+app.post("/api/admin/hero-slides", async (c) => {
+  if (!c.get("adminPerms").canEditSiteSettings) {
+    return c.json({ error: "Unauthorized" }, 403);
+  }
+
+  const formData = await c.req.formData();
+  const file = formData.get("file") as File | null;
+  const title = (formData.get("title") as string) || "";
+  const description = (formData.get("description") as string) || "";
+  const showLogo = formData.get("showLogo") === "true";
+  const btnPrimaryText = (formData.get("btnPrimaryText") as string) || "Make a Donation";
+  const btnPrimaryLink = (formData.get("btnPrimaryLink") as string) || "/donate";
+  const btnSecondaryText = (formData.get("btnSecondaryText") as string) || "About Us";
+  const btnSecondaryLink = (formData.get("btnSecondaryLink") as string) || "/about";
+  const sortOrder = parseInt((formData.get("sortOrder") as string) || "0", 10);
+
+  if (!file) return c.json({ error: "No file provided" }, 400);
+
+  const key = `hero/${Date.now()}-${file.name}`;
+  await c.env.BUCKET.put(key, file.stream(), {
+    httpMetadata: { contentType: file.type },
+  });
+
+  const url = `/api/r2/${key}`;
+  const db = createDb(c.env.DB);
+  const [inserted] = await db.insert(heroSlides).values({
+    key, url, title, description, showLogo,
+    btnPrimaryText, btnPrimaryLink, btnSecondaryText, btnSecondaryLink, sortOrder
+  }).returning();
+
+  return c.json({ slide: inserted }, 201);
+});
+
+// ── Admin: Delete slide ─────────────────────────────────────────────
+app.delete("/api/admin/hero-slides/:id", async (c) => {
+  if (!c.get("adminPerms").canEditSiteSettings) {
+    return c.json({ error: "Unauthorized" }, 403);
+  }
+
+  const id = parseInt(c.req.param("id"), 10);
+  if (isNaN(id)) return c.json({ error: "Invalid ID" }, 400);
+
+  const db = createDb(c.env.DB);
+  const [slide] = await db.select().from(heroSlides).where(eq(heroSlides.id, id)).limit(1);
+  if (!slide) return c.json({ error: "Not found" }, 404);
+
+  await c.env.BUCKET.delete(slide.key);
+  await db.delete(heroSlides).where(eq(heroSlides.id, id));
+  return c.json({ success: true });
+});
+
+// ── Admin: Update slide metadata ─────────────────────────────────────
+app.patch("/api/admin/hero-slides/:id", async (c) => {
+  if (!c.get("adminPerms").canEditSiteSettings) {
+    return c.json({ error: "Unauthorized" }, 403);
+  }
+
+  const id = parseInt(c.req.param("id"), 10);
+  if (isNaN(id)) return c.json({ error: "Invalid ID" }, 400);
+
+  const body = await c.req.json();
+  const db = createDb(c.env.DB);
+  await db.update(heroSlides).set(body).where(eq(heroSlides.id, id));
 
   return c.json({ success: true });
 });

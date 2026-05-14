@@ -1,8 +1,8 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Link } from "wouter";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { SectionDivider, DecorativeBorder } from "@/components/SectionDivider";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import templeExterior from "@/assets/images/temple-exterior.png";
 import templeCows from "@/assets/images/temple-cows.png";
 import oilLamps from "@/assets/images/oil-lamps.png";
@@ -134,53 +134,100 @@ const fadeUp = {
 
 export default function Home() {
   const { t, language } = useLanguage();
+  const [slides, setSlides] = useState<any[]>([]);
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+  useEffect(() => {
+    fetch("/api/hero-slides")
+      .then((r) => r.json())
+      .then((d) => {
+        if (d.slides && d.slides.length > 0) setSlides(d.slides);
+      })
+      .catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    if (slides.length <= 1) return;
+    const timer = setInterval(() => {
+      setCurrentIndex((prev) => (prev + 1) % slides.length);
+    }, 6000);
+    return () => clearInterval(timer);
+  }, [slides]);
+
+  const currentSlide = slides[currentIndex] || {
+    url: templeExterior,
+    title: t("Welcome to Gosuala"),
+    description: language === "kn"
+      ? "ಕರ್ನಾಟಕದ ಹೃದಯದಲ್ಲಿ ಪವಿತ್ರ ಗೋವಿನ ಶಾಶ್ವತ ರಕ್ಷಣೆಗೆ ಮತ್ತು ಆಧ್ಯಾತ್ಮಿಕ ಪರಂಪರೆಯ ಸಂರಕ್ಷಣೆಗೆ ಮೀಸಲಾದ ಪುಣ್ಯ ಕ್ಷೇತ್ರ."
+      : "A sacred sanctuary in the heart of Karnataka, devoted to the eternal care of the holy cow and the preservation of our spiritual heritage.",
+    showLogo: true,
+    btnPrimaryText: t("Make a Donation"),
+    btnPrimaryLink: "/donate",
+    btnSecondaryText: t("About Us"),
+    btnSecondaryLink: "/about"
+  };
 
   return (
     <div className="w-full">
       {/* Hero Section */}
-      <section className="relative w-full h-[88vh] min-h-[580px] flex items-center justify-center overflow-hidden mt-20">
-        <div className="absolute inset-0 z-0">
-          <div
-            className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-            style={{ backgroundImage: `url(${templeExterior})` }}
-          />
-          <div className="absolute inset-0 bg-foreground/72" />
-          <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-background/40 to-transparent" />
-        </div>
+      <section className="relative w-full h-[88vh] min-h-[580px] flex items-center justify-center overflow-hidden mt-20 bg-foreground">
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={currentIndex}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 1.5, ease: "easeInOut" }}
+            className="absolute inset-0 z-0"
+          >
+            <div
+              className="absolute inset-0 bg-cover bg-center bg-no-repeat transition-transform duration-[10s] scale-110"
+              style={{ backgroundImage: `url(${currentSlide.url})` }}
+            />
+            <div className="absolute inset-0 bg-foreground/72" />
+            <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-background/40 to-transparent" />
+          </motion.div>
+        </AnimatePresence>
 
         <div className="relative z-10 text-center text-background px-4 max-w-4xl mx-auto flex flex-col items-center justify-center pt-8">
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }}>
-            <img
-              src={"/kcm_logo.webp"}
-              alt="Logo"
-              className="mx-auto mb-6 h-28 w-28 object-contain drop-shadow-[0_10px_20px_rgba(0,0,0,0.4)]"
-              onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
-            />
-            <h1 className="font-serif text-3xl md:text-5xl lg:text-6xl mb-4 tracking-tight drop-shadow-[0_4px_8px_rgba(0,0,0,0.8)] leading-tight font-bold">
-              {t("Welcome to Gosuala")}
-            </h1>
-            <p className="text-base md:text-lg font-medium mb-10 max-w-2xl mx-auto opacity-100 leading-relaxed drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
-              {language === "kn"
-                ? "ಕರ್ನಾಟಕದ ಹೃದಯದಲ್ಲಿ ಪವಿತ್ರ ಗೋವಿನ ಶಾಶ್ವತ ರಕ್ಷಣೆಗೆ ಮತ್ತು ಆಧ್ಯಾತ್ಮಿಕ ಪರಂಪರೆಯ ಸಂರಕ್ಷಣೆಗೆ ಮೀಸಲಾದ ಪುಣ್ಯ ಕ್ಷೇತ್ರ."
-                : "A sacred sanctuary in the heart of Karnataka, devoted to the eternal care of the holy cow and the preservation of our spiritual heritage."}
-            </p>
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-              <Link
-                href="/donate"
-                data-testid="link-hero-donate"
-                className="bg-primary hover:bg-primary/90 text-primary-foreground px-8 py-3 rounded font-medium tracking-widest uppercase transition-all hover:-translate-y-1 shadow-lg text-sm"
-              >
-                {t("Make a Donation")}
-              </Link>
-              <Link
-                href="/about"
-                data-testid="link-hero-about"
-                className="bg-transparent border border-background/40 hover:bg-background/10 text-background px-8 py-3 rounded font-medium tracking-widest uppercase transition-all text-sm"
-              >
-                {t("About Us")}
-              </Link>
-            </div>
-          </motion.div>
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={currentIndex}
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -30 }}
+              transition={{ duration: 0.8, delay: 0.2 }}
+            >
+              {currentSlide.showLogo && (
+                <img
+                  src={"/kcm_logo.webp"}
+                  alt="Logo"
+                  className="mx-auto mb-6 h-28 w-28 object-contain drop-shadow-[0_10px_20px_rgba(0,0,0,0.4)]"
+                  onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
+                />
+              )}
+              <h1 className="font-serif text-3xl md:text-5xl lg:text-6xl mb-4 tracking-tight drop-shadow-[0_4px_8px_rgba(0,0,0,0.8)] leading-tight font-bold">
+                {currentSlide.title}
+              </h1>
+              <p className="text-base md:text-lg font-medium mb-10 max-w-2xl mx-auto opacity-100 leading-relaxed drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
+                {currentSlide.description}
+              </p>
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+                <Link
+                  href={currentSlide.btnPrimaryLink}
+                  className="bg-primary hover:bg-primary/90 text-primary-foreground px-8 py-3 rounded font-medium tracking-widest uppercase transition-all hover:-translate-y-1 shadow-lg text-sm"
+                >
+                  {currentSlide.btnPrimaryText}
+                </Link>
+                <Link
+                  href={currentSlide.btnSecondaryLink}
+                  className="bg-transparent border border-background/40 hover:bg-background/10 text-background px-8 py-3 rounded font-medium tracking-widest uppercase transition-all text-sm"
+                >
+                  {currentSlide.btnSecondaryText}
+                </Link>
+              </div>
+            </motion.div>
+          </AnimatePresence>
         </div>
       </section>
 
