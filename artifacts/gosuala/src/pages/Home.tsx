@@ -237,8 +237,8 @@ export default function Home() {
       <DecorativeBorder />
 
       {/* Mission Section */}
-      <section className="pt-4 pb-12 px-4 bg-background">
-        <div className="container mx-auto max-w-4xl text-center">
+      <section className="pt-16 pb-12 px-4 bg-background">
+        <div className="max-w-5xl mx-auto text-center">
           <motion.div variants={fadeUp} initial="hidden" whileInView="visible" viewport={{ once: true }}>
             <p className="text-xs tracking-widest uppercase text-primary mb-3">{t("Our Mission")}</p>
             <h2 className="font-serif text-3xl md:text-4xl text-foreground/90 leading-relaxed max-w-3xl mx-auto">
@@ -254,7 +254,7 @@ export default function Home() {
 
       {/* Stats Section */}
       <section className="py-10 px-4 bg-card">
-        <div className="container mx-auto max-w-5xl">
+        <div className="max-w-7xl mx-auto px-4">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
             {stats.map((stat, i) => (
               <motion.div
@@ -281,7 +281,7 @@ export default function Home() {
 
       {/* The Sacred Goshala — image + text */}
       <section className="py-10 px-4 bg-background">
-        <div className="container mx-auto max-w-6xl">
+        <div className="max-w-full mx-auto px-6 md:px-16 lg:px-24">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-10 items-center">
             <div className="order-2 md:order-1">
               <img
@@ -320,7 +320,7 @@ export default function Home() {
 
       {/* Our Activities */}
       <section className="py-10 px-4 bg-card">
-        <div className="container mx-auto max-w-6xl">
+        <div className="max-w-full mx-auto px-6 md:px-16 lg:px-24">
           <motion.div variants={fadeUp} initial="hidden" whileInView="visible" viewport={{ once: true }} className="text-center mb-8">
             <p className="text-xs tracking-widest uppercase text-primary mb-2">{t("Our Activities")}</p>
             <h2 className="font-serif text-3xl md:text-4xl text-foreground">
@@ -358,7 +358,7 @@ export default function Home() {
 
       {/* Eternal Devotion — image + text */}
       <section className="py-10 px-4 bg-background">
-        <div className="container mx-auto max-w-6xl">
+        <div className="max-w-full mx-auto px-6 md:px-16 lg:px-24">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-10 items-center">
             <motion.div className="space-y-4" variants={fadeUp} initial="hidden" whileInView="visible" viewport={{ once: true }}>
               <p className="text-xs tracking-widest uppercase text-primary">
@@ -413,7 +413,7 @@ export default function Home() {
 
       {/* Swamiji Section */}
       <section className="py-10 px-4 bg-background">
-        <div className="container mx-auto max-w-6xl">
+        <div className="max-w-full mx-auto px-6 md:px-16 lg:px-24">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-10 items-center">
             {/* Swamiji Photo Placeholder */}
             <motion.div
@@ -523,8 +523,8 @@ export default function Home() {
       <SectionDivider />
 
       {/* Donate CTA */}
-      <section className="py-12 px-4 bg-background">
-        <div className="container mx-auto max-w-4xl text-center">
+      <section className="pt-4 pb-16 px-4 bg-background">
+        <div className="max-w-5xl mx-auto text-center px-4">
           <motion.div variants={fadeUp} initial="hidden" whileInView="visible" viewport={{ once: true }}>
             <p className="text-xs tracking-widest uppercase text-primary mb-3">
               {language === "kn" ? "ನಮ್ಮನ್ನು ಬೆಂಬಲಿಸಿ" : "Support Our Cause"}
