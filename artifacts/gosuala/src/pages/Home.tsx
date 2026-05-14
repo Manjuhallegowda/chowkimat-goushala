@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useState } from "react";
+import React from "react";
 import { Link } from "wouter";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { SectionDivider, DecorativeBorder } from "@/components/SectionDivider";
@@ -103,13 +103,6 @@ const activities = [
   },
 ];
 
-const upcomingEvents = [
-  { date: "Karthika Pournami", title: "New Shelter Bhoomi Pooja", titleKn: "ಹೊಸ ಆಶ್ರಯ ಭೂಮಿ ಪೂಜೆ", desc: "Inauguration of the new cow shelter" },
-  { date: "Every Ekadashi", title: "Monthly Satsang", titleKn: "ಮಾಸಿಕ ಸತ್ಸಂಗ", desc: "Hari Katha and spiritual discourse" },
-  { date: "Every Sunday", title: "Gomaata Pooja", titleKn: "ಗೋಮಾತಾ ಪೂಜೆ", desc: "Sacred cow worship at 6:00 AM" },
-  { date: "Sankranti", title: "Gau Daan Mahotsava", titleKn: "ಗೌ ದಾನ ಮಹೋತ್ಸವ", desc: "Annual cow donation festival" },
-  { date: "Gokul Ashtami", title: "Krishna Janmashtami", titleKn: "ಕೃಷ್ಣ ಜನ್ಮಾಷ್ಟಮಿ", desc: "Celebrations with special Go-Pooja" },
-];
 
 const stats = [
   { value: "500+", label: "Cows Protected", labelKn: "ರಕ್ಷಿಸಿದ ಗೋವುಗಳು" },
@@ -133,48 +126,6 @@ function Marquee() {
   );
 }
 
-function EventsCarousel() {
-  const [current, setCurrent] = useState(0);
-  const { language } = useLanguage();
-
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrent((prev) => (prev + 1) % upcomingEvents.length);
-    }, 3000);
-    return () => clearInterval(timer);
-  }, []);
-
-  return (
-    <div className="relative overflow-hidden">
-      <div
-        className="flex transition-transform duration-700 ease-in-out"
-        style={{ transform: `translateX(-${current * 100}%)` }}
-      >
-        {upcomingEvents.map((event, i) => (
-          <div key={i} className="min-w-full px-4">
-            <div className="bg-card border border-border rounded-sm p-6 mx-auto max-w-sm text-center shadow-sm">
-              <p className="text-xs tracking-widest uppercase text-primary mb-2">{event.date}</p>
-              <h4 className="font-serif text-xl text-foreground mb-1">
-                {language === "kn" ? event.titleKn : event.title}
-              </h4>
-              <p className="text-sm text-foreground/60">{event.desc}</p>
-            </div>
-          </div>
-        ))}
-      </div>
-      <div className="flex justify-center gap-2 mt-4">
-        {upcomingEvents.map((_, i) => (
-          <button
-            key={i}
-            onClick={() => setCurrent(i)}
-            data-testid={`button-event-dot-${i}`}
-            className={`w-2 h-2 rounded-full transition-colors ${i === current ? "bg-primary" : "bg-border"}`}
-          />
-        ))}
-      </div>
-    </div>
-  );
-}
 
 const fadeUp = {
   hidden: { opacity: 0, y: 18 },
@@ -413,16 +364,73 @@ export default function Home() {
 
       <SectionDivider />
 
-      {/* Upcoming Events Carousel */}
+      {/* Swamiji Section */}
       <section className="py-10 px-4 bg-background">
-        <div className="container mx-auto max-w-3xl">
-          <motion.div variants={fadeUp} initial="hidden" whileInView="visible" viewport={{ once: true }} className="text-center mb-6">
-            <p className="text-xs tracking-widest uppercase text-primary mb-2">{t("Upcoming Events")}</p>
-            <h2 className="font-serif text-3xl text-foreground">
-              {language === "kn" ? "ಮುಂಬರುವ ಕಾರ್ಯಕ್ರಮಗಳು" : "Festival & Event Calendar"}
-            </h2>
-          </motion.div>
-          <EventsCarousel />
+        <div className="container mx-auto max-w-6xl">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-10 items-center">
+            {/* Swamiji Photo Placeholder */}
+            <motion.div
+              variants={fadeUp}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true }}
+              className="flex justify-center"
+            >
+              <div className="relative w-72 h-96 border-8 border-card shadow-xl rounded-t-full overflow-hidden bg-muted flex items-end justify-center" data-testid="img-swamiji-placeholder">
+                {/* Placeholder silhouette until real photo is added */}
+                <svg viewBox="0 0 200 260" className="w-full h-full absolute inset-0 text-foreground/10" fill="currentColor">
+                  <ellipse cx="100" cy="80" rx="40" ry="48" />
+                  <path d="M20 260 C20 180 50 160 100 155 C150 160 180 180 180 260Z" />
+                  {/* Simple robes suggestion */}
+                  <ellipse cx="100" cy="72" rx="28" ry="36" fill="hsl(28 36% 44% / 0.3)" />
+                </svg>
+                <div className="relative z-10 w-full bg-gradient-to-t from-foreground/60 to-transparent pb-6 pt-12 text-center">
+                  <p className="text-background/90 text-xs tracking-widest uppercase">
+                    {language === "kn" ? "ಚಿತ್ರ ಶೀಘ್ರದಲ್ಲೇ" : "Photo coming soon"}
+                  </p>
+                </div>
+              </div>
+            </motion.div>
+
+            {/* Swamiji Info */}
+            <motion.div
+              className="space-y-4"
+              variants={fadeUp}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true }}
+            >
+              <p className="text-xs tracking-widest uppercase text-primary">
+                {language === "kn" ? "ನಮ್ಮ ಮಾರ್ಗದರ್ಶಕರು" : "Our Spiritual Guide"}
+              </p>
+              <h2 className="font-serif text-3xl md:text-4xl text-foreground">
+                {language === "kn" ? "ಪೂಜ್ಯ ಸ್ವಾಮೀಜಿ" : "Pujya Swamiji"}
+              </h2>
+              <div className="w-12 h-0.5 bg-primary" />
+              <p className="text-foreground/70 leading-relaxed">
+                {language === "kn"
+                  ? "ಶ್ರೀ ಕಲ್ಯಾಣ ಚೌಕಿಮಠದ ಪೀಠಾಧಿಪತಿಗಳು ಗೋಶಾಲಾದ ಆಧ್ಯಾತ್ಮಿಕ ಸ್ಫೂರ್ತಿ. ತಮ್ಮ ಅಪಾರ ಜ್ಞಾನ ಮತ್ತು ಕರುಣೆಯಿಂದ ಸಹಸ್ರಾರು ಭಕ್ತರ ಹೃದಯವನ್ನು ಮುಟ್ಟಿದ್ದಾರೆ."
+                  : "The Peethadhipati of Shree Kalyan Chowkimath is the spiritual heart of the Goushala. With profound wisdom rooted in Vedic tradition and boundless compassion for all living beings, Swamiji has guided thousands of devotees on the path of dharma."}
+              </p>
+              <p className="text-foreground/70 leading-relaxed">
+                {language === "kn"
+                  ? "ಅವರ ನೇತೃತ್ವದಲ್ಲಿ ಗೋಶಾಲಾ ಕೇವಲ ಗೋ ಸಂರಕ್ಷಣಾ ಕೇಂದ್ರವಲ್ಲ, ಬದಲಿಗೆ ಆಧ್ಯಾತ್ಮಿಕ ಜ್ಞಾನ ಮತ್ತು ಸೇವೆಯ ದೀಪಸ್ತಂಭ ಆಗಿದೆ."
+                  : "Under his divine guidance, the Goushala has grown not just as a sanctuary for cows, but as a beacon of spiritual knowledge, selfless service, and devotion to Gaumata."}
+              </p>
+              <blockquote className="border-l-2 border-primary pl-4 italic text-foreground/60 font-serif text-lg mt-2">
+                {language === "kn"
+                  ? "\"ಗೋಮಾತೆಯ ಸೇವೆಯೇ ಶ್ರೇಷ್ಠ ತಪಸ್ಸು.\""
+                  : "\"Serving the Gaumata is the highest form of tapasya.\""}
+              </blockquote>
+              <Link
+                href="/about"
+                data-testid="link-about-swamiji"
+                className="inline-block text-primary text-sm font-medium tracking-widest uppercase hover:underline underline-offset-4 pt-2"
+              >
+                {t("Read More")} &rarr;
+              </Link>
+            </motion.div>
+          </div>
         </div>
       </section>
 
