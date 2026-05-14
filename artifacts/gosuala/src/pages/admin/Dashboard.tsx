@@ -289,11 +289,22 @@ function SiteSettingsManager() {
     e.preventDefault();
     setSaving(true); setMessage("");
     try {
+      const sanitizedSettings = { ...settings };
+      
+      // Auto-extract SRC from iframe tag if user pasted the whole thing
+      if (sanitizedSettings.map_embed_url?.includes("<iframe")) {
+        const match = sanitizedSettings.map_embed_url.match(/src="([^"]+)"/);
+        if (match && match[1]) {
+          sanitizedSettings.map_embed_url = match[1];
+        }
+      }
+
       const res = await fetch("/api/admin/settings", {
         method: "PUT", headers: authHeaders(),
-        body: JSON.stringify(settings),
+        body: JSON.stringify(sanitizedSettings),
       });
       if (!res.ok) throw new Error((await res.json()).error || "Save failed");
+      setSettings(sanitizedSettings);
       setMessage("Settings updated successfully!");
     } catch (err: any) { setMessage(err.message); } finally { setSaving(false); }
   }
