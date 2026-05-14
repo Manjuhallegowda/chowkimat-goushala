@@ -18,7 +18,12 @@ type Variables = {
 const app = new Hono<{ Bindings: Env; Variables: Variables }>();
 
 // ── CORS ────────────────────────────────────────────────────────────
-app.use("*", cors());
+app.use("*", cors({
+  origin: ["https://chowkimat-goushala.pages.dev", "http://localhost:3000", "http://localhost:5173"],
+  allowMethods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+  allowHeaders: ["Content-Type", "Authorization"],
+  credentials: true,
+}));
 
 // ── Helpers ─────────────────────────────────────────────────────────
 
