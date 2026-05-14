@@ -17,6 +17,7 @@ import AdminDashboard from "@/pages/admin/Dashboard";
 // Layout components
 import { Navbar } from "@/components/Navbar";
 import { TempleFooter } from "@/components/TempleFooter";
+import ScrollToTop from "@/components/ScrollToTop";
 
 const queryClient = new QueryClient();
 
@@ -55,6 +56,7 @@ function App() {
       <LanguageProvider>
         <TooltipProvider>
           <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
+            <ScrollToTop />
             <Router />
           </WouterRouter>
           <Toaster />
