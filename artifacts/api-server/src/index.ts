@@ -83,7 +83,7 @@ app.get("/api/hero-slides", async (c) => {
 
 // ── Auth: Login ─────────────────────────────────────────────────────
 app.post("/api/admin/login", async (c) => {
-  const { username, password } = await c.req.json<{ username: string; password: string }>();
+  const { username, password, lat, lng } = await c.req.json<{ username: string; password: string; lat?: number; lng?: number }>();
   if (!username || !password) {
     return c.json({ error: "Username and password required" }, 400);
   }
@@ -100,11 +100,31 @@ app.post("/api/admin/login", async (c) => {
   // Record login log (do not block login if logging fails)
   try {
     const ipAddress = c.req.header("cf-connecting-ip") || c.req.header("x-forwarded-for") || "Unknown";
-    const country = c.req.header("cf-ipcountry");
-    const city = c.req.header("cf-ipcity");
     let location = "Unknown";
-    if (city && country) location = `${city}, ${country}`;
-    else if (country) location = country;
+
+    if (lat && lng) {
+      try {
+        const revGeo = await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lng}&localityLanguage=en`);
+        const geoData: any = await revGeo.json();
+        const city = geoData.locality || geoData.city;
+        const state = geoData.principalSubdivision;
+        const country = geoData.countryName;
+        
+        const parts = [city, state, country].filter(Boolean);
+        if (parts.length > 0) {
+           location = parts.join(", ") + " (Exact GPS)";
+        } else {
+           location = `Lat: ${lat.toFixed(4)}, Lng: ${lng.toFixed(4)} (Exact GPS)`;
+        }
+      } catch (e) {
+        location = `Lat: ${lat.toFixed(4)}, Lng: ${lng.toFixed(4)} (Exact GPS)`;
+      }
+    } else {
+      const country = c.req.header("cf-ipcountry");
+      const city = c.req.header("cf-ipcity");
+      if (city && country) location = `${city}, ${country} (IP Approx)`;
+      else if (country) location = `${country} (IP Approx)`;
+    }
 
     const userAgent = c.req.header("user-agent") || "Unknown";
     

@@ -8,18 +8,42 @@ export default function AdminLogin() {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [locatingText, setLocatingText] = useState("");
   const [, setLocation] = useLocation();
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError("");
     setLoading(true);
+    setLocatingText("Verifying location security...");
+
+    let lat: number | null = null;
+    let lng: number | null = null;
 
     try {
+      if ("geolocation" in navigator) {
+        await new Promise((resolve) => {
+          navigator.geolocation.getCurrentPosition(
+            (pos) => {
+              lat = pos.coords.latitude;
+              lng = pos.coords.longitude;
+              resolve(true);
+            },
+            (err) => {
+              console.warn("Geolocation failed/denied:", err);
+              resolve(false);
+            },
+            { timeout: 5000, maximumAge: 0 }
+          );
+        });
+      }
+      
+      setLocatingText("");
+
       const res = await fetch("/api/admin/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, password }),
+        body: JSON.stringify({ username, password, lat, lng }),
       });
 
       const data = await res.json();
@@ -156,7 +180,7 @@ export default function AdminLogin() {
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
                   </svg>
-                  Signing in…
+                  {locatingText || "Signing in…"}
                 </>
               ) : (
                 "Sign In"
