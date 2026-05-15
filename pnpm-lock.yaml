@@ -102,6 +102,13 @@ importers:
         version: 4.90.1(@cloudflare/workers-types@4.20260511.1)
 
   artifacts/gosuala:
+    dependencies:
+      '@workspace/db':
+        specifier: workspace:*
+        version: link:../../lib/db
+      hono:
+        specifier: ^4.7.0
+        version: 4.12.18
     devDependencies:
       '@hookform/resolvers':
         specifier: ^3.10.0
