@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useLocation } from "wouter";
-import { Pencil, Trash2, Shield, Image as ImageIcon, CreditCard, Settings, Plus, Save, X, Key, Layout, LogOut, Menu, UserCircle } from "lucide-react";
+import { Pencil, Trash2, Shield, Image as ImageIcon, CreditCard, Settings, Plus, Save, X, Key, Layout, LogOut, Menu, UserCircle, History } from "lucide-react";
 
 // ── Types ───────────────────────────────────────────────────────────
 
@@ -29,7 +29,7 @@ function authHeaders(): HeadersInit {
 
 // ── Tabs ────────────────────────────────────────────────────────────
 
-type Tab = "gallery" | "hero" | "settings" | "financial" | "admins";
+type Tab = "gallery" | "hero" | "settings" | "financial" | "admins" | "logs";
 
 // ── Component ───────────────────────────────────────────────────────
 
@@ -55,6 +55,7 @@ export default function AdminDashboard() {
     { key: "settings", label: "Settings", icon: Settings, show: perms.canEditSiteSettings },
     { key: "financial", label: "Financial", icon: CreditCard, show: perms.canEditFinancials },
     { key: "admins", label: "Admins", icon: Shield, show: perms.canManageAdmins },
+    { key: "logs", label: "Login Logs", icon: History, show: perms.canManageAdmins },
   ];
 
   const activeTab = tabs.find(t => t.key === tab);
@@ -150,8 +151,9 @@ export default function AdminDashboard() {
             {tab === "gallery" && perms.canEditGallery && <GalleryManager />}
             {tab === "hero" && perms.canEditSiteSettings && <HeroManager />}
             {tab === "settings" && perms.canEditSiteSettings && <SiteSettingsManager />}
-            {tab === "financial" && perms.canEditFinancials && <FinancialSettingsManager />}
-            {tab === "admins" && perms.canManageAdmins && <AdminManager />}
+            { tab === "financial" && perms.canEditFinancials && <FinancialSettingsManager /> }
+            { tab === "admins" && perms.canManageAdmins && <AdminManager /> }
+            { tab === "logs" && perms.canManageAdmins && <LoginLogsViewer /> }
           </div>
         </div>
       </main>
@@ -775,6 +777,72 @@ function AdminManager() {
                 </div>
               </div>
             ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ═════════════════════════════════════════════════════════════════════
+// LOGIN LOGS VIEWER
+// ═════════════════════════════════════════════════════════════════════
+
+function LoginLogsViewer() {
+  const [logs, setLogs] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch("/api/admin/login-logs", { headers: authHeaders() })
+      .then((r) => r.json())
+      .then((d) => setLogs(d.logs || []))
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, []);
+
+  return (
+    <div className="max-w-5xl space-y-8">
+      <div>
+        <h2 className="font-serif text-2xl lg:text-3xl text-foreground font-bold mb-2">Login History</h2>
+        <p className="text-xs text-foreground/40 uppercase tracking-widest font-bold">Recent administrator logins</p>
+      </div>
+
+      <div className="bg-white border border-border rounded-3xl shadow-sm overflow-hidden">
+        {loading ? (
+          <div className="flex flex-col items-center justify-center py-20 text-foreground/20 italic">
+            <div className="w-8 h-8 border-2 border-primary/20 border-t-primary rounded-full animate-spin mb-4" />
+            <p className="text-xs font-black uppercase tracking-widest">Fetching Logs...</p>
+          </div>
+        ) : logs.length === 0 ? (
+          <div className="p-12 text-center text-foreground/40 italic">No login records found.</div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="bg-muted/30 border-b border-border/50 text-[10px] uppercase tracking-widest font-black text-foreground/40">
+                  <th className="p-4 pl-6">Admin</th>
+                  <th className="p-4">Timestamp</th>
+                  <th className="p-4">IP Address</th>
+                  <th className="p-4">Location</th>
+                  <th className="p-4 pr-6">Browser/Device</th>
+                </tr>
+              </thead>
+              <tbody className="text-sm">
+                {logs.map((log) => (
+                  <tr key={log.id} className="border-b border-border/50 last:border-0 hover:bg-muted/10 transition-colors">
+                    <td className="p-4 pl-6 font-bold text-foreground">{log.username || `ID: ${log.adminId}`}</td>
+                    <td className="p-4 text-foreground/60 whitespace-nowrap">
+                      {new Date(log.timestamp).toLocaleString()}
+                    </td>
+                    <td className="p-4 font-mono text-xs text-primary/80">{log.ipAddress || "Unknown"}</td>
+                    <td className="p-4 text-foreground/70">{log.location || "Unknown"}</td>
+                    <td className="p-4 pr-6 text-xs text-foreground/50 max-w-[200px] truncate" title={log.userAgent}>
+                      {log.userAgent || "Unknown"}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         )}
       </div>

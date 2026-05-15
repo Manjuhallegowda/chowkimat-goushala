@@ -1,7 +1,7 @@
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { createDb, type Env } from "@workspace/db";
-import { gallery, admins, siteSettings, heroSlides } from "@workspace/db/schema";
+import { gallery, admins, siteSettings, heroSlides, adminLoginLogs } from "@workspace/db/schema";
 import { eq, asc, desc } from "drizzle-orm";
 
 type Variables = {
@@ -97,6 +97,27 @@ app.post("/api/admin/login", async (c) => {
     return c.json({ error: "Invalid credentials" }, 401);
   }
 
+  // Record login log (do not block login if logging fails)
+  try {
+    const ipAddress = c.req.header("cf-connecting-ip") || c.req.header("x-forwarded-for") || "Unknown";
+    const country = c.req.header("cf-ipcountry");
+    const city = c.req.header("cf-ipcity");
+    let location = "Unknown";
+    if (city && country) location = `${city}, ${country}`;
+    else if (country) location = country;
+
+    const userAgent = c.req.header("user-agent") || "Unknown";
+    
+    await db.insert(adminLoginLogs).values({
+      adminId: admin.id,
+      ipAddress,
+      location,
+      userAgent,
+    });
+  } catch (e) {
+    console.error("Failed to log admin login:", e);
+  }
+
   const token = await signJwt({
     sub: admin.id,
     username: admin.username,
@@ -166,6 +187,29 @@ app.get("/api/admin/users", async (c) => {
     canEditGallery: admins.canEditGallery,
   }).from(admins);
   return c.json({ admins: allAdmins });
+});
+
+// ── List admin login logs ───────────────────────────────────────────
+app.get("/api/admin/login-logs", async (c) => {
+  if (!c.get("adminPerms").canManageAdmins) {
+    return c.json({ error: "You don't have permission to view login logs" }, 403);
+  }
+  const db = createDb(c.env.DB);
+  
+  const logs = await db.select({
+    id: adminLoginLogs.id,
+    username: admins.username,
+    ipAddress: adminLoginLogs.ipAddress,
+    location: adminLoginLogs.location,
+    userAgent: adminLoginLogs.userAgent,
+    timestamp: adminLoginLogs.timestamp,
+  })
+  .from(adminLoginLogs)
+  .leftJoin(admins, eq(adminLoginLogs.adminId, admins.id))
+  .orderBy(desc(adminLoginLogs.timestamp))
+  .limit(100);
+
+  return c.json({ logs });
 });
 
 // ── Create a new admin ──────────────────────────────────────────────

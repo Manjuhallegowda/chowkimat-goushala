@@ -17,6 +17,15 @@ export const admins = sqliteTable("admins", {
   canEditGallery: integer("can_edit_gallery", { mode: "boolean" }).notNull().default(true),
 });
 
+export const adminLoginLogs = sqliteTable("admin_login_logs", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  adminId: integer("admin_id").notNull().references(() => admins.id, { onDelete: "cascade" }),
+  ipAddress: text("ip_address"),
+  location: text("location"),
+  userAgent: text("user_agent"),
+  timestamp: integer("timestamp", { mode: "timestamp" }).notNull().$defaultFn(() => new Date()),
+});
+
 export const heroSlides = sqliteTable("hero_slides", {
   id: integer("id").primaryKey({ autoIncrement: true }),
   key: text("key").notNull(),
@@ -36,6 +45,9 @@ export type InsertHeroSlide = typeof heroSlides.$inferInsert;
 
 export type Admin = typeof admins.$inferSelect;
 export type InsertAdmin = typeof admins.$inferInsert;
+
+export type AdminLoginLog = typeof adminLoginLogs.$inferSelect;
+export type InsertAdminLoginLog = typeof adminLoginLogs.$inferInsert;
 
 // ─── Gallery images (metadata, actual files live in R2) ─────────────
 export const gallery = sqliteTable("gallery", {
